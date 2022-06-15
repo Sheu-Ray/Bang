@@ -42,7 +42,7 @@ char REV_CARABINEdescription[200] = "[裝備牌：槍]射擊距離變成4\n";
 char WINCHEDTERdescription[200] = "[裝備牌：槍]射擊距離變成5\n";
 
 char Bart_Cassidydescription[200] = "被扣一滴血時，可以從卡牌堆中抽一張牌\n";
-char Black_Jackdescription[200] = "在抽牌階段，必須亮出抽出的第二張牌，若該牌是紅心或方塊，他可以再多抽一張牌\n";
+char Black_Jackdescription[200] = "在抽牌階段，可以選擇亮出抽出的第二張牌，若該牌是紅心或方塊，可以再多抽一張牌\n";
 char Calamity_Janetdescription[200] = "遊戲牌中的MISSED可以當BANG用；BANG也可以當MISSE用。當MISSE當BANG用時，還是必須遵 守只能出一張BANG的規則\n";
 char El_Gringodescription[200] = "當被任一位玩家傷害時，每扣一滴血，就可以從該玩家隨機抽一張手牌。兩滴血就抽兩張，以此類推。炸彈造成的傷害無法發動此能力\n";
 char Jesse_Jonesdescription[200] = "在抽牌階段時，第一張牌可以選擇從遊戲牌堆中或是任一位玩家的手牌中抽牌。第二張則是從遊戲牌中抽牌\n";
