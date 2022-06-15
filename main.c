@@ -254,7 +254,7 @@ void Black_Jack(int current_player_id_turn){
       }
     }
     system("clear");
-    print_allPlayers(player[0],player[1],player[2],player[3]);
+    print_allPlayers(player,current_player_id_turn);
     printf("本回合的抽卡已完成 持有手牌如下\n");
     print_hand(player[current_player_id_turn-1]);
     if(ability){
@@ -277,7 +277,7 @@ void Black_Jack(int current_player_id_turn){
         			}
       			}
       			system("clear");
-          		print_allPlayers(player[0],player[1],player[2],player[3]);
+          		print_allPlayers(player,current_player_id_turn);
           		print_hand(player[current_player_id_turn-1]);
          		printf("已完成使用能力抽卡 目前持有手牌如上\n");
          		sleep(5);
