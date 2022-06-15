@@ -57,7 +57,7 @@ char Slab_the_Killerdescription[200] = "其他玩家要躲過他出的BANG必須
 char Suzy_Lafayettedescription[200] = "沒手牌時，可以立即從遊戲牌庫頂抽一張牌\n";
 char Vulture_Samdescription[200] = "當一位玩家死亡時，接收該死亡玩家的手牌和場上的裝備牌到自己的手牌中。\n";
 char Willy_the_Kiddescription[200] = "在他的回合，出Bang的張數沒有限制\n";
-
+//suit:0 -> 黑桃, 1 -> 愛心, 2 -> 方塊, 3 -> 
 
   char BangCARDNAME[20] = "Bang";
   card[0].ID = 0;
