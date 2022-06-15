@@ -6,14 +6,14 @@ struct CARD{
     int suit;
     int rank;
     char name[20];
-    char description[200];
+    char * description;
 };
 
 struct CAREER {
     int ID;
     int health;
     char name[20];
-    char description[200];
+    char * description;
 };
 
 struct Player{
