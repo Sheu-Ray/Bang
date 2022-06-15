@@ -9,8 +9,13 @@ extern struct Player player[4];
 void initialization(){
   for( int i = 0 ;i < 4 ; i++){
     player[i].player_ID = i+1;
+    player[i].weapon =  -1;
+    player[i].hourse =  -1;
+    player[i].jail =    -1;
+    player[i].dynamic = -1;
+    player[i].scope =   -1;
+    player[i].barrel =  -1;
   }
-
 
 char BANGdescription[200] = "[消耗牌]射擊距離內的一名玩家\n";
 char MISSEDdescription[200] = "[消耗牌]讓一次對自己的射擊無效\n";
