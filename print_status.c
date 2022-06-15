@@ -1,15 +1,5 @@
-//********************************************************/
-// 目前 印出裝備部分 要等card[]資料全部輸入完成才能生效
-// (現階段是在main塞一兩個card.name測試用) 
-//
-// getPosition和 getCareer 和main()是現階段測試成果用
-// 等身分角色結構確定&資料輸入完之後，再改用struct存(同card呼叫法) 
-// 
-// 不會變動的function有:(93-191行)
-// print_allPlayers、print_player、print_hand、print_position 
-//********************************************************/
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 #include "Bang_structure.h"
 
 extern struct CARD card[80];
@@ -17,11 +7,11 @@ extern struct CARD card[80];
 char * getPosition(int position){
 	switch(position){
 		case 1:
-			return "sheriff";
+			return "Sheriff";
 		case 3:
-			return "outlaw";
+			return "Outlaw";
 		case 4:
-			return "renegade";
+			return "Renegade";
 		default:
 			return NULL;
 	}
@@ -31,42 +21,112 @@ char * getPosition(int position){
 char * getCareer(int career){
 	switch(career){
 		case 0:
-			return "Bart Cassidy";
+			return "Bart Cassidy   ";
 		case 1:
-			return "Black Jack";
+			return "Black Jack     ";
 		case 2:
-			return "Calamity Janet";
+			return "Calamity Janet ";
 		case 3:
-			return "El Gringo";
+			return "El Gringo      ";
 		case 4:
-			return "Jesse Jones";
+			return "Jesse Jones    ";
 		case 5:
-			return "Jourdonnais";
+			return "Jourdonnais    ";
 		case 6: 
-			return "Kit Carlson";
+			return "Kit Carlson    ";
 		case 7:
-			return "Lucky Duke";
+			return "Lucky Duke     ";
 		case 8:
-			return "Paul Regret";
+			return "Paul Regret    ";
 		case 9:
-			return "Pedro Ramirez";
+			return "Pedro Ramirez  ";
 		case 10:
-			return "Rose Doolan";
+			return "Rose Doolan    ";
 		case 11:
-			return "Sid Ketchum";
+			return "Sid Ketchum    ";
 		case 12:
 			return "Slab the Killer";
 		case 13:
-			return "Suzy Lafayette";
+			return "Suzy Lafayette ";
 		case 14:
-			return "Vulture Sam";
+			return "Vulture Sam    ";
 		case 15:
-			return "Willy the Kid";
+			return "Willy the Kid  ";
 		default:
 			return NULL;
 	}
 		
 	return NULL;
+}
+
+int left(int self){
+	if (self == 1){
+		return 4;
+	}
+	else{
+		return self-1;
+	}
+}
+
+int right(int self){
+	if (self == 4){
+		return 1;
+	}
+	else{
+		return self+1;
+	}
+}
+
+int distance(struct Player player[4], int self, int target){ //self&target: 1-4
+	int dist = 0;
+	
+	//self to self: no distance
+	if (self == target){
+		return 0;
+	}
+	
+	//self or target die: return -1
+	if (player[self-1].health <= 0 || player[target-1].health <= 0){
+		return -1;
+	}
+	
+	//origin distance
+	dist = abs(self-target);
+	if (dist > 2){
+		dist = 4-dist;
+	}
+	if(dist == 2){
+		if (player[left(self)-1].health <= 0 || player[right(self)-1].health <= 0){
+			dist --;
+		}
+	}
+	
+	//Paul Regret
+	if (player[target-1].career == 8){
+		dist ++;
+	}
+	
+	//Rose Doolan
+	if (player[self-1].career == 10){
+		dist --;
+	}
+	
+	//Mustang(hourse)
+	if (player[target-1].hourse == 66){
+		dist ++;
+	}
+	
+	//Appolosa(hourse)
+	if (player[self-1].hourse == 67){
+		dist --;
+	}
+	
+	//Scope
+	if (player[self-1].scope == 65){
+		dist --;
+	}
+	
+	return dist;
 }
 
 void print_position(struct Player player1, struct Player player2, struct Player player3, struct Player player4){
@@ -85,74 +145,92 @@ void print_position(struct Player player1, struct Player player2, struct Player 
 	return;
 }
 
-void print_player(struct Player player){
-	//player_ID
-	printf("Player%d ", player.player_ID);
-	//health
-	printf("( ");
-	if (player.health <= 0){
-		printf("DEAD ");
-	}
-	else{
-		for (int i=0; i<player.health; i++){
-			printf("1");
+void print_player(struct Player player[4], int viewer){
+	for (int i=0; i<4; i++){
+		//player_ID
+		printf("Player%d ", player[i].player_ID);
+		
+		//health
+		printf("( ");
+		if (player[i].health <= 0){
+			printf("DEAD  ");
 		}
-		for (int i=0; i<5-player.health; i++){
-			printf(" ");
+		else{
+			for (int i=0; i<player[i].health; i++){
+				printf("1");
+			}
+			for (int i=0; i<6-player[i].health; i++){
+				printf(" ");
+			}
 		}
-	}
-	printf(") ");
-	//career
-	printf(" %s", getCareer(player.career));
-	if (strlen(getCareer(player.career))<=13){
-		printf("\t");
-	}
+		printf(") ");
+		
+		//card_count
+		printf("%d cards | ", player[i].card_amount);
+		
+		//distance
+		if (viewer > 0){
+			if (distance(player, viewer, i+1) <= 0){ //0:self, -1:dead
+				printf("     | ");
+			}
+			else{
+				printf("d: %d | ", distance(player, viewer, i+1));
+			}
+		}
+		
+		//career
+		printf("%s ", getCareer(player[i].career));
+		
+		//dynamic
+		if (player[i].dynamic == 1){
+			printf("[D]");
+		}
+		else{
+			printf("   ");
+		}
+		
+		//jail
+		if (player[i].jail == 1){
+			printf("[J]");
+		}
+		else{
+			printf("   ");
+		}
+		
+		printf("|");
+		
+		//weapon
+		if (player[i].weapon > 0){ 
+			printf("[%s]", card[player[i].weapon].name);
+		}
+		
+		//scope
+		if (player[i].scope > 0){ 
+			printf("[Scope]");
+		}
+		
+		//hourse
+		if (player[i].hourse > 0){ 
+			printf("[%s]", card[player[i].hourse].name);
+		}
+		
+		//barrel
+		if (player[i].barrel > 0){ 
+			printf("[Barrel]");
+		}
+		
+		printf("\n");
+	} 
 	
-	//dynamic
-	if (player.dynamic == 1){
-		printf("[D]");
-	}
-	else{
-		printf("   ");
-	}
-	//jail
-	if (player.jail == 1){
-		printf("[J]");
-	}
-	else{
-		printf("   ");
-	}
-	
-	printf("|");
-	//weapon
-	if (player.weapon > 0){ //改: weaponID範圍 
-		printf("[%s]", card[player.weapon].name);
-	}
-	//scope
-	if (player.scope > 0){ //改: scopeID範圍 
-		printf("[Scope]");
-	}
-	//hourse
-	if (player.hourse > 0){ //改: hourseID範圍 
-		printf("[%s]", card[player.hourse].name);
-	}
-	//barrel
-	if (player.barrel > 0){ //改: barrelID範圍 
-		printf("[Barrel]");
-	}
-	
-	printf("\n");
 	return;
 }
 
-void print_allPlayers(struct Player player1, struct Player player2, struct Player player3, struct Player player4){
+// viewer: playerID(1-4) , viewer <= 0 may not print distance part
+void print_allPlayers(struct Player player[4], int viewer){
 	//印出公開身分: 警長&死掉的人的身分(歹徒.叛徒...) 
-	print_position(player1, player2, player3, player4);
+	print_position(player[0], player[1], player[2], player[3]);
 	//印每個人攤在桌上的牌(生命、職業、裝備、炸彈監獄酒桶...) 
-	print_player(player1);
-	print_player(player2);
-	print_player(player3);
-	print_player(player4);
+	print_player(player, viewer);
 	return;
 }
 
@@ -168,4 +246,3 @@ void print_hand(struct Player player){
 	//printf("(Choose at least %d more cards.)\n", handcount-player.health);
 	return;
 }
-
