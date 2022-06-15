@@ -17,6 +17,7 @@ struct Player player[4];
 int current_player_id_turn = 0; //紀錄當前回合玩家id //1~4
 
 void initialization(); //init.c card and career
+void Black_Jack(int current_player_id_turn);
 
 /*
 char * getPosition(int position);
@@ -119,7 +120,14 @@ int main(void){
     // only for test
 
     int normal = 1;
-
+    
+    if(player[current_player_id_turn-1].career == 1){
+    	normal = 0;
+    	printf("將開始進行本回合的抽卡\n");
+    	sleep(2);
+    	Black_Jack(current_player_id_turn);
+    }
+    
     if( player[current_player_id_turn-1].career == 4 ){
       while(1){
         printf("是否要用角色能力 : 從其他玩家的手牌中抽取第一張卡 ( y | n ) : ");
@@ -230,4 +238,54 @@ int main(void){
   }
   
   return 0;
+}
+
+void Black_Jack(int current_player_id_turn){
+    int ability = 0;
+    for( int j = 0 ;j < 2 ; j++){ //張數
+      while(1){
+        int draw_card_num = rand() % 80;
+        if( draw_card[draw_card_num] == 0 ){
+          draw_card[draw_card_num] = 1;
+          player[current_player_id_turn-1].hand[draw_card_num] = 1;
+          if(card[draw_card_num].suit == 1 || card[draw_card_num].suit == 2) ability = draw_card_num;
+          break;
+        }
+      }
+    }
+    system("clear");
+    print_allPlayers(player[0],player[1],player[2],player[3]);
+    printf("本回合的抽卡已完成 持有手牌如下\n");
+    print_hand(player[current_player_id_turn-1]);
+    if(ability){
+    	while(1){
+    		printf("是否要用角色能力 :在抽牌階段，可以選擇亮出抽出的第二張牌(%3d. %s)，若該牌是紅心或方塊，可以再多抽一張牌 ( y | n ) :", ability, card[ability].name);
+    		char ans[3];
+    		fgets(ans,3,stdin);
+    		if(ans[0] == 'y'){
+    			system("clear");
+    			char tmp[4];
+    			printf("%3d. %s\n", ability, card[ability].name);
+     			printf("以上是第二張手牌, 待所有玩家看到後, 按任意鍵結束顯示：");
+     			fgets(tmp,3,stdin);
+     			while(1){
+        			int draw_card_num = rand() % 80;
+        			if( draw_card[draw_card_num] == 0 ){
+          			draw_card[draw_card_num] = 1;
+          			player[current_player_id_turn-1].hand[draw_card_num] = 1;
+          			break;
+        			}
+      			}
+      			system("clear");
+          		print_allPlayers(player[0],player[1],player[2],player[3]);
+          		print_hand(player[current_player_id_turn-1]);
+         		printf("已完成使用能力抽卡 目前持有手牌如上\n");
+         		sleep(5);
+         		break;
+     		}
+     		else if(ans[0] == 'n'){
+     			break;
+     		}
+     	}
+    }
 }
