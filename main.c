@@ -6,6 +6,7 @@
 #include"Bang_structure.h"
 
 int draw_card[80] = {0}; //抽卡堆
+int draw_card_top = -1; 
 int fold_card[80] = {0}; //棄卡堆
 int fold_card_flag = 0;  //棄卡數量
 
@@ -23,7 +24,7 @@ char * getCareer(int career);
 void print_position(struct Player player1, struct Player player2, struct Player player3, struct Player player4);
 void print_player(struct Player player);
 */
-void print_allPlayers(struct Player player1, struct Player player2, struct Player player3, struct Player player4);
+void print_allPlayers(struct Player player[4], int viewer);
 void print_hand(struct Player player);
 
 
@@ -110,14 +111,15 @@ int main(void){
   int end_game = 0;
   while( !(end_game) ){
     system("clear");
-    print_allPlayers(player[0],player[1],player[2],player[3]);
+    print_allPlayers(player,current_player_id_turn);
     print_hand(player[current_player_id_turn-1]);
 
     // only for test
-    // player[current_player_id_turn-1].career = 4;
+    player[current_player_id_turn-1].career = 4;
     // only for test
 
     int normal = 1;
+
     if( player[current_player_id_turn-1].career == 4 ){
       while(1){
         printf("是否要用角色能力 : 從其他玩家的手牌中抽取第一張卡 ( y | n ) : ");
@@ -167,7 +169,7 @@ int main(void){
           }
           
           system("clear");
-          print_allPlayers(player[0],player[1],player[2],player[3]);
+          print_allPlayers(player,current_player_id_turn);
           print_hand(player[current_player_id_turn-1]);
           printf("已完成使用能力抽卡 目前持有手牌如上\n");
           sleep(5);
@@ -183,6 +185,8 @@ int main(void){
     else if( player[current_player_id_turn-1].career == -2 ){
 
     }
+
+
     if( normal ){ //normal
       printf("將開始進行本回合的抽卡\n");
       sleep(2);
@@ -198,7 +202,7 @@ int main(void){
       }
 
       system("clear");
-      print_allPlayers(player[0],player[1],player[2],player[3]);
+      print_allPlayers(player,current_player_id_turn);
       printf("本回合的抽卡已完成 持有手牌如下\n");
       print_hand(player[current_player_id_turn-1]);
       sleep(2);
