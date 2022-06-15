@@ -280,12 +280,11 @@ void Black_Jack(int current_player_id_turn){
     }
     system("clear");
     print_allPlayers(player,current_player_id_turn);
-    printf("本回合的抽卡已完成 持有手牌如下\n");
     print_hand(player[current_player_id_turn-1]);
     if(ability){
     	while(1){
         while( (ch = getchar()) !='\n' && ch != EOF );
-    		printf("是否要用角色能力 :在抽牌階段，可以選擇亮出抽出的第二張牌(%3d. %s)，若該牌是紅心或方塊，可以再多抽一張牌 ( y | n ) :", ability, card[ability].name);
+    		printf("是否要用角色能力 :在抽牌階段，可以選擇亮出抽出的第二張牌(%3d. %s )，若該牌是紅心或方塊，可以再多抽一張牌 ( y | n ) :", ability, card[ability].name);
     		char ans[3];
     		fgets(ans,3,stdin);
     		if(ans[0] == 'y'){
@@ -311,6 +310,11 @@ void Black_Jack(int current_player_id_turn){
          		break;
      		}
      		else if(ans[0] == 'n'){
+      		system("clear");
+          print_allPlayers(player[0],player[1],player[2],player[3]);
+          print_hand(player[current_player_id_turn-1]);
+     			printf("本回合的抽卡已完成 持有手牌如上\n");
+     			sleep(5);
      			break;
      		}
      	}
