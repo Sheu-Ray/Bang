@@ -20,15 +20,20 @@ char ch; //for clear stdin
 
 void initialization(); //init.c card and career
 void clear_stdin();
+int get_winner(struct Player player[4]);
 void Black_Jack(int current_player_id_turn);
 void Pedro_Ramirez(int current_player_id_turn);
 
 void print_allPlayers(struct Player player[4], int viewer);
 void print_hand(struct Player player);
+void print_winner(struct Player player[4], int winner);
+void print_allPosition(struct Player player[4]); //end of game
 
 
 int check_end_game(){
-  //
+  if (get_winner(player) > 0){
+  	return 1;
+  }
   return 0;
 }
 
@@ -275,10 +280,55 @@ int main(void){
     }
 
     current_player_id_turn = (current_player_id_turn) % 4 + 1;  //1~4
+    
+    //only for test - kill player of specific postion
+    /*
+    for (int i=0; i<4; i++){
+      if (player[i].position == 3 ||player[i].position == 4 ){
+      player[i].health = 0;
+      }
+    }
+    */
     end_game = check_end_game();
   }
+  system("clear");
+  print_winner(player, get_winner(player));
+  print_allPosition(player);
   
   return 0;
+}
+
+// return winner's position ID(1=sheriff 3=outlaws 4=renegade)
+int get_winner(struct Player player[4]){
+  int sheriff = -1, outlaw1 = -1, outlaw2 = -1, renegade = -1; //player index: 0-3
+  //get all position's player index
+  for (int i=0; i<4; i++){
+    if (player[i].position == 1){
+      sheriff = i;
+    }
+    if (player[i].position == 3){
+      if (outlaw1 < 0){
+        outlaw1 = i;
+      }
+      else{
+        outlaw2 = i;
+      }
+    }
+    if (player[i].position == 4){
+      renegade = i;
+    }
+  }
+  //find winner
+  if (player[outlaw1].health <= 0 && player[outlaw2].health <= 0 && player[renegade].health <= 0){
+    return 1; //sheriff win
+  }
+  if (player[outlaw1].health <= 0 && player[outlaw2].health <= 0 && player[sheriff].health <= 0){
+    return 4; //renegade win
+  }
+  if (player[sheriff].health <= 0){
+    return 3; //outlaws win
+  }
+  return 0; //no one win
 }
 
 void Black_Jack(int current_player_id_turn){
