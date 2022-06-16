@@ -10,6 +10,8 @@ int draw_card[80] = {0}; //抽卡堆
 int draw_card_top = -1; 
 int fold_card[80] = {0}; //棄卡堆
 int fold_card_flag = 0;  //棄卡數量
+void drop_card(int current_player_id_turn,int target_card_id);
+void normal_draw_card(int current_player_id_turn);
 
 struct CARD card[80];     //卡牌定義
 struct CAREER career[16]; //角色卡定義
@@ -23,11 +25,14 @@ void clear_stdin();
 int get_winner(struct Player player[4]);
 void Black_Jack(int current_player_id_turn);
 void Pedro_Ramirez(int current_player_id_turn);
+void Kit_Carlson(int current_player_id_turn);
 
 void print_allPlayers(struct Player player[4], int viewer);
 void print_hand(struct Player player);
 void print_winner(struct Player player[4], int winner);
 void print_allPosition(struct Player player[4]); //end of game
+
+int bang(int current_player_id_turn, int target_card_id);
 
 
 int check_end_game(){
@@ -43,14 +48,14 @@ int main(void){
 
   printf("請輸入遊玩人數(1~4) : ");
   int player_num = 0;
-  char temp[10];
+  char temp[20];
   //scanf("%d",&player_num);
-  fgets(temp,10,stdin);
+  fgets(temp,20,stdin);
   player_num = atoi(temp);
   while(player_num>4 || player_num<1){
     printf("請輸入遊玩人數(1~4) : ");
     //scanf("%d",&player_num);
-    fgets(temp,10,stdin);
+    fgets(temp,20,stdin);
     player_num = atoi(temp);
   };
 
@@ -119,37 +124,43 @@ int main(void){
     print_hand(player[current_player_id_turn-1]);
 
     // only for test
-    // player[current_player_id_turn-1].career = 9;
+    // player[current_player_id_turn-1].career = 4;
     // only for test
 
     int normal = 1;
     
+    //Black_Jack
     if(player[current_player_id_turn-1].career == 1){
     	normal = 0;
     	printf("將開始進行本回合的抽卡\n");
     	sleep(2);
     	Black_Jack(current_player_id_turn);
     }
-
-    if( player[current_player_id_turn-1].career == 4 ){
+    //Jesse Jones	
+    else if( player[current_player_id_turn-1].career == 4 ){
       while(1){
 
         clear_stdin();
 
         printf("是否要用角色能力 : 從其他玩家的手牌中抽取第一張卡 ( y | n ) : ");
-        char ans[3];
-        fgets(ans,3,stdin);
+        char ans[20];
+        fgets(ans,20,stdin);
         if(ans[0] == 'y'){
           //fix bug 如果所有其他玩家都沒有手牌
           normal = 0;
           while(1){
             clear_stdin();
             printf("選擇一名其他玩家(1~4) : ");
-            fgets(ans,3,stdin);
+            fgets(ans,20,stdin);
             int target_player_id = atoi(ans);
             if(target_player_id ==current_player_id_turn){
               printf("您不能選擇自己 請重新選取\n");
-              sleep(2);
+              sleep(1);
+              continue;
+            }
+            if(!(target_player_id>=1 && target_player_id<=4)){
+              printf("請重新輸入有效值\n");
+              sleep(1);
               continue;
             }
             if(player[target_player_id-1].card_amount != 0 ){ //持有手牌可供抽取
@@ -172,22 +183,13 @@ int main(void){
           }
 
           //正常抽取第二張卡
-          for( int j = 0 ;j < 1 ; j++){ //張數
-            while(1){
-              int draw_card_num = rand() % 80;
-              if( draw_card[draw_card_num] == 0 ){
-                draw_card[draw_card_num] = 1;
-                player[current_player_id_turn-1].hand[draw_card_num] = 1;
-                break;
-              }
-            }
-          }
+          normal_draw_card(current_player_id_turn);
           
           system("clear");
           print_allPlayers(player,current_player_id_turn);
           print_hand(player[current_player_id_turn-1]);
           printf("已完成使用能力抽卡 目前持有手牌如上\n");
-          sleep(5);
+          sleep(3);
 
           break;
         }
@@ -197,14 +199,26 @@ int main(void){
       }
 
     }
+    //Kit_Carlson
+    else if(player[current_player_id_turn-1].career == 6){
+    	normal = 0;
+    	printf("將開始進行本回合的抽卡\n");
+    	sleep(2);
+    	Kit_Carlson(current_player_id_turn);
+    }
     //Pedro Ramirez
     else if( player[current_player_id_turn-1].career == 9 ){ 
       if (fold_card_flag > 0){
         while (1){
           clear_stdin();
-          printf("是否要使用角色能力 : 從棄牌堆中抽取第一張卡 ( y | n ) : ");
-          char ans[3];
-          fgets(ans, 3, stdin);
+          char ans[20];
+          if (player[current_player_id_turn-1].AI == 1){
+            ans[0] == 'y';
+          }
+          else{
+            printf("是否要使用角色能力 : 從棄牌堆中抽取第一張卡 ( y | n ) : ");
+            fgets(ans, 20, stdin);
+          }
           if (ans[0] == 'y'){
     	      normal = 0;
     	      Pedro_Ramirez(current_player_id_turn);
@@ -224,25 +238,31 @@ int main(void){
     if( normal ){ //normal
       printf("將開始進行本回合的抽卡\n");
       sleep(2);
+      normal_draw_card(current_player_id_turn);
+      normal_draw_card(current_player_id_turn);
+      /*
       for( int j = 0 ;j < 2 ; j++){ //張數
         while(1){
           int draw_card_num = rand() % 80;
           if( draw_card[draw_card_num] == 0 ){
             draw_card[draw_card_num] = 1;
             player[current_player_id_turn-1].hand[draw_card_num] = 1;
+            player[current_player_id_turn-1].card_amount++;
             break;
           }
         }
       }
+      */
 
       system("clear");
       print_allPlayers(player,current_player_id_turn);
-      printf("本回合的抽卡已完成 持有手牌如下\n");
+      printf("\n本回合的抽卡已完成 持有手牌如下");
       print_hand(player[current_player_id_turn-1]);
       sleep(2);
     }
 
     //出牌階段
+    int check_bang = 0; //檢查是否有用過bang
     while(1){
       //while( (ch = getchar()) !='\n' && ch != EOF );
       //setbuf(stdin,NULL);
@@ -254,12 +274,23 @@ int main(void){
       //scanf("%*[^<]%*c");
       // clear stdin
       clear_stdin();
+      system("clear");
+      print_allPlayers(player,current_player_id_turn);
+      printf("\n持有手牌如下");
+      print_hand(player[current_player_id_turn-1]);
 
       printf("請選擇要出的卡片號碼 (0~79) [-1為結束出牌階段] : ");
-      char ans_num[5];
-      fgets(ans_num,4,stdin);
+      char ans_num[20];
+      fgets(ans_num,20,stdin);
       int target_card_id = atoi(ans_num);
-      if( target_card_id == -1 ){
+      if( target_card_id == 0 && (ans_num[0] != '0') ){
+        printf("%s不是合法的輸入\n",ans_num);
+        sleep(1);
+        continue;
+      }
+      else if( target_card_id == -1 ){
+        system("clear");
+        print_allPlayers(player,current_player_id_turn);
         printf("\n結束出牌階段 將輪到下一位玩家的回合\n");
         sleep(3);
         break;
@@ -267,29 +298,49 @@ int main(void){
         printf("所選擇的號碼是 %d \n",target_card_id);
         sleep(1);
       }
+      if (!( player[current_player_id_turn-1].hand[target_card_id] )){
+        printf("未持有這張牌 請重新輸入卡片號碼\n");
+        sleep(1);
+        continue;
+      }
+
+      int check_for_done_use_card = 0; //確認是否有完成使用卡片 有則要丟棄
+
+      if( target_card_id >= 0 && target_card_id <= 24 ){ //0-24 bang
+        if(check_bang == 1){
+          printf("本回合已使用過bang!\n");
+          sleep(1);
+          continue;
+        }
+        check_for_done_use_card = bang(current_player_id_turn,target_card_id);
+        if( check_for_done_use_card == 1 ){
+          check_bang = 1;
+          drop_card(current_player_id_turn,target_card_id);
+        }
+      }
+
       //only for test: 把出牌動作當棄牌用
       /*
       if ( player[current_player_id_turn-1].hand[target_card_id] ){
-        player[current_player_id_turn-1].hand[target_card_id] = 0;
-        player[current_player_id_turn-1].card_amount --;
-      	fold_card[fold_card_flag] = target_card_id;
-      	fold_card_flag ++;
+        drop_card(current_player_id_turn,target_card_id);
       }
       */
-
+      end_game = check_end_game(); //每完成一次出牌要檢查
+      if(end_game == 1) break;
     }
 
     current_player_id_turn = (current_player_id_turn) % 4 + 1;  //1~4
     
     //only for test - kill player of specific postion
-    /*
     for (int i=0; i<4; i++){
       if (player[i].position == 3 ||player[i].position == 4 ){
       player[i].health = 0;
       }
     }
-    */
     end_game = check_end_game();
+    if(end_game == 1) break;
+    //only for test - kill player of specific postion
+
   }
   system("clear");
   print_winner(player, get_winner(player));
@@ -352,15 +403,15 @@ void Black_Jack(int current_player_id_turn){
     	while(1){
         clear_stdin();
     		printf("是否要用角色能力 :在抽牌階段，可以選擇亮出抽出的第二張牌(%3d. %s)，若該牌是紅心或方塊，可以再多抽一張牌 ( y | n ) :", ability, card[ability].name);
-    		char ans[3];
-    		fgets(ans,3,stdin);
+    		char ans[20];
+    		fgets(ans,20,stdin);
     		if(ans[0] == 'y'){
     			system("clear");
-    			char tmp[4];
+    			char tmp[20];
     			printf("%3d. %s\n", ability, card[ability].name);
           clear_stdin();
      			printf("以上是第二張手牌, 待所有玩家看到後, 按任意鍵結束顯示：");
-     			fgets(tmp,3,stdin);
+     			fgets(tmp,20,stdin);
      			while(1){
         			int draw_card_num = rand() % 80;
         			if( draw_card[draw_card_num] == 0 ){
@@ -373,7 +424,7 @@ void Black_Jack(int current_player_id_turn){
           		print_allPlayers(player,current_player_id_turn);
           		print_hand(player[current_player_id_turn-1]);
          		printf("已完成使用能力抽卡 目前持有手牌如上\n");
-         		sleep(5);
+         		sleep(2);
          		break;
      		}
      		else if(ans[0] == 'n'){
@@ -388,25 +439,83 @@ void Pedro_Ramirez(int current_player_id_turn){
   player[current_player_id_turn-1].hand[fold_card[fold_card_flag]] = 1;
   player[current_player_id_turn-1].card_amount ++ ;
 
-  //正常抽取第二張卡
-  for( int j = 0 ;j < 1 ; j++){ //張數
+  normal_draw_card(current_player_id_turn);//正常抽取第二張卡
+
+  system("clear");
+  print_allPlayers(player,current_player_id_turn);
+  print_hand(player[current_player_id_turn-1]);
+  printf("已完成使用能力抽卡 目前持有手牌如上\n");
+  sleep(3);
+  return;
+}
+
+
+void Kit_Carlson(int current_player_id_turn){
+  printf("發動角色能力 :抽牌階段時，可以從遊戲牌堆上方拿三張起來看，選擇兩張，放回一張到遊戲牌堆頂端\n");
+  int cardChoice[3] = {-1};
+  char ans[20];
+  int target_card;
+  for( int j = 0 ;j < 3 ; j++){ //張數
+    if(draw_card_top != -1){
+      printf("%3d. %s \n",draw_card_top, card[draw_card_top].name);
+      cardChoice[j] = draw_card_top;
+      draw_card_top = -1;
+      continue;
+    }
     while(1){
       int draw_card_num = rand() % 80;
-      if( draw_card[draw_card_num] == 0 ){
-        draw_card[draw_card_num] = 1;
-        player[current_player_id_turn-1].hand[draw_card_num] = 1;
-        player[current_player_id_turn-1].card_amount ++ ;
+      if( draw_card[draw_card_num] == 0 && draw_card_num != cardChoice[0] && draw_card_num != cardChoice[1] && draw_card_num != cardChoice[2]){
+        printf("%3d. %s \n",draw_card_num, card[draw_card_num].name);
+        cardChoice[j] = draw_card_num;
         break;
-        }
       }
     }
-    system("clear");
-    print_allPlayers(player,current_player_id_turn);
-    print_hand(player[current_player_id_turn-1]);
-    printf("已完成使用能力抽卡 目前持有手牌如上\n");
-    sleep(5);
-    return;
+  }
+  printf("以上是牌堆的前三張牌, 請輸入要放回牌堆的牌的編號：");
+  while(1){
+    clear_stdin();
+    fgets(ans,20,stdin);
+    target_card = atoi(ans);
+    if(target_card != cardChoice[0] && target_card != cardChoice[1] && target_card != cardChoice[2] ){
+      printf("您輸入的編號並非抽出的牌之一 請重新輸入要放回牌堆的牌的編號：");
+      continue;
+    }
+    break;
+  }
+  draw_card_top = target_card;
+
+  for( int j = 0 ;j < 3 ; j++){ //張數
+    if(cardChoice[j] != target_card){
+      player[current_player_id_turn-1].hand[cardChoice[j]] = 1;
+      player[current_player_id_turn-1].card_amount ++ ;
+    }
+  }
+  system("clear");
+  print_allPlayers(player,current_player_id_turn);
+  print_hand(player[current_player_id_turn-1]);
+  printf("已完成使用能力抽卡 目前持有手牌如上\n");
+  sleep(3);
+  return;
 }
+
+void normal_draw_card(int current_player_id_turn){
+      if(draw_card_top != -1){
+      	 draw_card[draw_card_top] = 1;
+         player[current_player_id_turn-1].hand[draw_card_top] = 1;
+         draw_card_top = -1;
+      }
+      else{
+        while(1){
+          int draw_card_num = rand() % 80;
+          if( draw_card[draw_card_num] == 0 ){
+            draw_card[draw_card_num] = 1;
+            player[current_player_id_turn-1].hand[draw_card_num] = 1;
+            break;
+          }
+        }
+       }
+}
+
 
 void clear_stdin(){
   //clear stdin
@@ -414,7 +523,7 @@ void clear_stdin(){
     struct pollfd pfd ={ .fd = fileno(stdin) , .events = POLLIN };
     if( poll(&pfd,1,0) > 0){
       if( pfd.revents && POLLIN ){
-        // printf("stdin\n");
+        printf("clear_stdin\n");
         ungetc(' ',stdin);
         scanf("%*[^\n]%*c");
       }
@@ -423,4 +532,45 @@ void clear_stdin(){
     else break;
   }
   //clear stdin
+}
+void drop_card(int current_player_id_turn,int target_card_id){
+  player[current_player_id_turn-1].hand[target_card_id] = 0;
+  player[current_player_id_turn-1].card_amount --;
+  fold_card[fold_card_flag] = target_card_id;
+  fold_card_flag ++;
+}
+int bang(int current_player_id_turn, int target_card_id){
+  while(1){
+    printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
+    char ans[20];
+    fgets(ans,20,stdin);
+    if(ans[0] == 'n'){
+      return 0;
+    }
+    else{
+      //choose player
+      while(1){
+        clear_stdin();
+        printf("選擇一名其他玩家(1~4) : ");
+        fgets(ans,20,stdin);
+        int target_player_id = atoi(ans);
+        if(target_player_id ==current_player_id_turn){
+          printf("您不能選擇自己 請重新選取\n");
+          sleep(1);
+          continue;
+        }
+        if(!(target_player_id>=1 && target_player_id<=4)){
+          printf("請重新輸入有效值\n");
+          sleep(1);
+          continue;
+        }
+        player[target_player_id-1].health--;
+      printf("成功使用\n");
+      sleep(1);
+      return 1;
+      }
+    }
+  }
+  //return 1;
 }
