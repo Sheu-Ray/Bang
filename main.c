@@ -3,6 +3,7 @@
 #include<string.h>
 #include<unistd.h>
 #include<time.h>
+#include<poll.h>
 #include"Bang_structure.h"
 
 int draw_card[80] = {0}; //抽卡堆
@@ -18,6 +19,7 @@ int current_player_id_turn = 0; //紀錄當前回合玩家id //1~4
 char ch; //for clear stdin
 
 void initialization(); //init.c card and career
+void clear_stdin();
 void Black_Jack(int current_player_id_turn);
 void Pedro_Ramirez(int current_player_id_turn);
 
@@ -126,8 +128,9 @@ int main(void){
 
     if( player[current_player_id_turn-1].career == 4 ){
       while(1){
-        char ch;
-        while( (ch = getchar()) !='\n' && ch != EOF );
+
+        clear_stdin();
+
         printf("是否要用角色能力 : 從其他玩家的手牌中抽取第一張卡 ( y | n ) : ");
         char ans[3];
         fgets(ans,3,stdin);
@@ -135,7 +138,7 @@ int main(void){
           //fix bug 如果所有其他玩家都沒有手牌
           normal = 0;
           while(1){
-            while( (ch = getchar()) !='\n' && ch != EOF );
+            clear_stdin();
             printf("選擇一名其他玩家(1~4) : ");
             fgets(ans,3,stdin);
             int target_player_id = atoi(ans);
@@ -193,7 +196,7 @@ int main(void){
     else if( player[current_player_id_turn-1].career == 9 ){ 
       if (fold_card_flag > 0){
         while (1){
-          while( (ch = getchar()) !='\n' && ch != EOF );
+          clear_stdin();
           printf("是否要使用角色能力 : 從棄牌堆中抽取第一張卡 ( y | n ) : ");
           char ans[3];
           fgets(ans, 3, stdin);
@@ -236,7 +239,17 @@ int main(void){
 
     //出牌階段
     while(1){
-      while( (ch = getchar()) !='\n' && ch != EOF );
+      //while( (ch = getchar()) !='\n' && ch != EOF );
+      //setbuf(stdin,NULL);
+      //fseek(stdin,0,SEEK_END);
+      //ungetc('<',stdin);
+      //while( (ch = getchar()) != '<' ){
+      //  printf("ch = '%c'\n",ch);
+      //};
+      //scanf("%*[^<]%*c");
+      // clear stdin
+      clear_stdin();
+
       printf("請選擇要出的卡片號碼 (0~79) [-1為結束出牌階段] : ");
       char ans_num[5];
       fgets(ans_num,4,stdin);
@@ -245,6 +258,9 @@ int main(void){
         printf("\n結束出牌階段 將輪到下一位玩家的回合\n");
         sleep(3);
         break;
+      }else{
+        printf("所選擇的號碼是 %d \n",target_card_id);
+        sleep(1);
       }
       //only for test: 把出牌動作當棄牌用
       /*
@@ -284,7 +300,7 @@ void Black_Jack(int current_player_id_turn){
     print_hand(player[current_player_id_turn-1]);
     if(ability){
     	while(1){
-        while( (ch = getchar()) !='\n' && ch != EOF );
+        clear_stdin();
     		printf("是否要用角色能力 :在抽牌階段，可以選擇亮出抽出的第二張牌(%3d. %s)，若該牌是紅心或方塊，可以再多抽一張牌 ( y | n ) :", ability, card[ability].name);
     		char ans[3];
     		fgets(ans,3,stdin);
@@ -292,7 +308,7 @@ void Black_Jack(int current_player_id_turn){
     			system("clear");
     			char tmp[4];
     			printf("%3d. %s\n", ability, card[ability].name);
-          while( (ch = getchar()) !='\n' && ch != EOF );
+          clear_stdin();
      			printf("以上是第二張手牌, 待所有玩家看到後, 按任意鍵結束顯示：");
      			fgets(tmp,3,stdin);
      			while(1){
@@ -340,4 +356,21 @@ void Pedro_Ramirez(int current_player_id_turn){
     printf("已完成使用能力抽卡 目前持有手牌如上\n");
     sleep(5);
     return;
+}
+
+void clear_stdin(){
+  //clear stdin
+  while(1){
+    struct pollfd pfd ={ .fd = fileno(stdin) , .events = POLLIN };
+    if( poll(&pfd,1,0) > 0){
+      if( pfd.revents && POLLIN ){
+        // printf("stdin\n");
+        ungetc(' ',stdin);
+        scanf("%*[^\n]%*c");
+      }
+      else break;
+    }
+    else break;
+  }
+  //clear stdin
 }
