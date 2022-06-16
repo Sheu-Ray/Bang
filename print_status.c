@@ -246,3 +246,42 @@ void print_hand(struct Player player){
 	//printf("(Choose at least %d more cards.)\n", handcount-player.health);
 	return;
 }
+
+void print_winner(struct Player player[4], int winner){ //1:sheriff 3:outlaw 4:renegade
+	int printed = 0;
+	printf("The winner is...... ");
+	if (winner == 1){
+		printf("SHERIFF !!\n");
+	}
+	else if (winner == 3){
+		printf("OUTLAW !!\n");
+	}
+	else if (winner == 4){
+		printf("RENEGADE !!\n");
+	}
+	else {
+		printf("\n");
+	}
+	
+	printf("(");
+	for (int i=0; i<4; i++){
+		if (player[i].position == winner){
+			if (printed > 0){
+				printf(" &");
+			}
+			printf(" Player%d", i+1);
+			printed ++;
+		}
+	}
+	printf(" won the game. )\n");
+	return;
+}
+
+//use in the end of game
+void print_allPosition(struct Player player[4]){
+	printf("\n");
+	for (int i=0; i<4; i++){
+		printf("< Player%d is %s >\n", i+1, getPosition(player[i].position));
+	}
+	return;
+}
