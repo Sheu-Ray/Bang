@@ -156,10 +156,10 @@ void print_player(struct Player player[4], int viewer){
 			printf("DEAD  ");
 		}
 		else{
-			for (int i=0; i<player[i].health; i++){
+			for (int j=0; j<player[i].health; j++){
 				printf("1");
 			}
-			for (int i=0; i<6-player[i].health; i++){
+			for (int j=0; j<6-player[i].health; j++){
 				printf(" ");
 			}
 		}
