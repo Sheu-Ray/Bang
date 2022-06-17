@@ -56,11 +56,12 @@ int main(void){
   player_num = atoi(temp);
   while(player_num>4 || player_num<1){
     printf("請輸入遊玩人數(1~4) : ");
-    //scanf("%d",&player_num);
     clear_stdin();
     fgets(temp,20,stdin);
-    // ungetc('\n',stdin);
-    // scanf("%*[^\n]%*c");
+    if(temp[strlen(temp)-1] != '\n') {
+      char ch;
+      while(ch = getchar() != '\n');
+    }  
     player_num = atoi(temp);
   };
 
