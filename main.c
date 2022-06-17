@@ -438,7 +438,8 @@ void Black_Jack(int current_player_id_turn){
         if( draw_card[draw_card_num] == 0 ){
           draw_card[draw_card_num] = 1;
           player[current_player_id_turn-1].hand[draw_card_num] = 1;
-          if(card[draw_card_num].suit == 1 || card[draw_card_num].suit == 2) ability = draw_card_num;
+          player[current_player_id_turn-1].card_amount ++ ;
+          if(j == 1 && (card[draw_card_num].suit == 1 || card[draw_card_num].suit == 2)) ability = draw_card_num;
           break;
         }
       }
@@ -465,6 +466,7 @@ void Black_Jack(int current_player_id_turn){
         			if( draw_card[draw_card_num] == 0 ){
           			draw_card[draw_card_num] = 1;
           			player[current_player_id_turn-1].hand[draw_card_num] = 1;
+                player[current_player_id_turn-1].card_amount ++ ;
           			break;
         			}
       			}
@@ -562,6 +564,7 @@ void normal_draw_card(int current_player_id_turn){
           }
         }
        }
+       player[current_player_id_turn-1].card_amount ++ ;
 }
 
 
