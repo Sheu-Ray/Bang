@@ -33,6 +33,9 @@ void print_winner(struct Player player[4], int winner);
 void print_allPosition(struct Player player[4]); //end of game
 
 int bang(int current_player_id_turn, int target_card_id);
+int beer(int current_player_id_turn, int target_card_id);
+int saloow(int current_player_id_turn, int target_card_id);
+int stagecoach(int current_player_id_turn, int target_card_id);
 
 
 int check_end_game(){
@@ -317,7 +320,50 @@ int main(void){
           check_bang = 1;
           drop_card(current_player_id_turn,target_card_id);
         }
-      }
+      }else
+      
+      if( target_card_id >= 53 && target_card_id <= 58 ){ //53-58 beer
+        int alive_count = 0;
+        for (int p=0; p<4; p++){
+          if (player[p].health > 0){
+            alive_count ++;
+          }
+        }
+        if (alive_count <= 2){
+          printf("剩下兩名玩家時無法使用此卡恢復血量(子彈)\n");
+          sleep(1);
+          continue;
+        }
+		
+        int health_limit = career[player[current_player_id_turn-1].career].health;
+        if (player[current_player_id_turn-1].position == 1){
+          health_limit ++;
+        }
+        if (player[current_player_id_turn-1].health >= health_limit){
+          printf("已達血量(子彈)上限，無法再恢復血量(子彈)\n");
+          sleep(2);
+          continue;
+        }
+		
+        check_for_done_use_card = beer(current_player_id_turn, target_card_id);
+        if (check_for_done_use_card == 1){
+          drop_card(current_player_id_turn, target_card_id);
+        }
+      } else
+      
+      if ( target_card_id == 59 ){ //59 saloow
+        check_for_done_use_card = saloow(current_player_id_turn, target_card_id);
+        if (check_for_done_use_card == 1){
+          drop_card(current_player_id_turn, target_card_id);
+        }
+      } else
+	  
+      if ( target_card_id >= 48 && target_card_id >= 50 ){ //48-49 stagecoach AND 50 wells_fargo
+        check_for_done_use_card = stagecoach(current_player_id_turn, target_card_id);
+        if (check_for_done_use_card == 1){
+          drop_card(current_player_id_turn, target_card_id);
+        }
+      } 
 
       //only for test: 把出牌動作當棄牌用
       /*
@@ -332,6 +378,7 @@ int main(void){
     current_player_id_turn = (current_player_id_turn) % 4 + 1;  //1~4
     
     //only for test - kill player of specific postion
+    /*
     for (int i=0; i<4; i++){
       if (player[i].position == 3 ||player[i].position == 4 ){
       player[i].health = 0;
@@ -339,6 +386,7 @@ int main(void){
     }
     end_game = check_end_game();
     if(end_game == 1) break;
+    */
     //only for test - kill player of specific postion
 
   }
@@ -573,4 +621,72 @@ int bang(int current_player_id_turn, int target_card_id){
     }
   }
   //return 1;
+}
+int beer(int current_player_id_turn, int target_card_id){
+  while(1){
+    printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
+      char ans[20];
+      fgets(ans,20,stdin);
+      if(ans[0] == 'n'){
+        return 0;
+      }
+      else if (ans[0] == 'y'){
+        player[current_player_id_turn-1].health ++;
+        printf("成功使用\n");
+        sleep(1);
+        return 1;
+    }
+  }
+  return 0;
+}
+
+int saloow(int current_player_id_turn, int target_card_id){
+  int health_limit = 0;
+  while(1){
+    printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
+    char ans[20];
+    fgets(ans,20,stdin);
+      if(ans[0] == 'n'){
+        return 0;
+      }
+      else if (ans[0] == 'y'){
+        for (int i=0; i<4; i++){
+          health_limit = career[player[i].career].health;
+          if (player[i].position == 1){
+            health_limit++;
+          }
+          if ( player[i].health < health_limit ){
+            player[i].health++;
+          }
+        }
+        printf("成功使用\n");
+        sleep(1);
+        return 1;
+    }
+  }
+  return 0;
+}
+
+int stagecoach(int current_player_id_turn, int target_card_id){
+  while(1){
+    printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
+    char ans[20];
+    fgets(ans,20,stdin);
+    if(ans[0] == 'n'){
+      return 0;
+    }else if (ans[0]=='y'){
+      normal_draw_card(current_player_id_turn);
+      normal_draw_card(current_player_id_turn);
+      if ( target_card_id == 50 ){ //well_fargo
+        normal_draw_card(current_player_id_turn);
+      }
+      printf("成功使用\n");
+      sleep(1);
+      return 1;
+    }
+	}
+	return 0;
 }
