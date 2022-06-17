@@ -22,6 +22,7 @@ char ch; //for clear stdin
 
 void initialization(); //init.c card and career
 void clear_stdin();
+void clean_fgets_buffer(char temp[]);
 int get_winner(struct Player player[4]);
 void Black_Jack(int current_player_id_turn);
 void Pedro_Ramirez(int current_player_id_turn);
@@ -53,15 +54,13 @@ int main(void){
   char temp[20];
   //scanf("%d",&player_num);
   fgets(temp,20,stdin);
+  clean_fgets_buffer(temp);
   player_num = atoi(temp);
   while(player_num>4 || player_num<1){
     printf("請輸入遊玩人數(1~4) : ");
     clear_stdin();
     fgets(temp,20,stdin);
-    if(temp[strlen(temp)-1] != '\n') {
-      char ch;
-      while(ch = getchar() != '\n');
-    }  
+    clean_fgets_buffer(temp);
     player_num = atoi(temp);
   };
 
@@ -572,6 +571,13 @@ void normal_draw_card(int current_player_id_turn){
   player[current_player_id_turn-1].card_amount ++ ;
 }
 
+void clean_fgets_buffer(char temp[]){
+  printf("'%s'\n",temp);
+  if(temp[strlen(temp)-1] != '\n') {
+    char ch;
+    while(ch = getchar() != '\n');
+  }  
+}
 
 void clear_stdin(){
   //clear stdin
