@@ -57,7 +57,10 @@ int main(void){
   while(player_num>4 || player_num<1){
     printf("請輸入遊玩人數(1~4) : ");
     //scanf("%d",&player_num);
+    clear_stdin();
     fgets(temp,20,stdin);
+    // ungetc('\n',stdin);
+    // scanf("%*[^\n]%*c");
     player_num = atoi(temp);
   };
 
@@ -287,6 +290,11 @@ int main(void){
       fgets(ans_num,20,stdin);
       int target_card_id = atoi(ans_num);
       if( target_card_id == 0 && (ans_num[0] != '0') ){
+        printf("%s不是合法的輸入\n",ans_num);
+        sleep(1);
+        continue;
+      }
+      if( target_card_id > 79 || target_card_id < -1 ){
         printf("%s不是合法的輸入\n",ans_num);
         sleep(1);
         continue;
@@ -570,7 +578,7 @@ void clear_stdin(){
     struct pollfd pfd ={ .fd = fileno(stdin) , .events = POLLIN };
     if( poll(&pfd,1,0) > 0){
       if( pfd.revents && POLLIN ){
-        printf("clear_stdin\n");
+        //printf("clear_stdin\n");
         ungetc(' ',stdin);
         scanf("%*[^\n]%*c");
       }
