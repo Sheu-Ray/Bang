@@ -30,6 +30,7 @@ struct Player{
 	int barrel;   //酒桶 
 	int hand[80]; //手牌
     int card_amount;
+    int Vulture_Sam;
 };
 
 #endif // BANG_H#define MYMATCH_H
