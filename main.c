@@ -32,11 +32,13 @@ void print_allPlayers(struct Player player[4], int viewer);
 void print_hand(struct Player player);
 void print_winner(struct Player player[4], int winner);
 void print_allPosition(struct Player player[4]); //end of game
+int left(int self); //ID: 1-4
 
 int bang(int current_player_id_turn, int target_card_id);
 int beer(int current_player_id_turn, int target_card_id);
 int saloow(int current_player_id_turn, int target_card_id);
 int stagecoach(int current_player_id_turn, int target_card_id);
+int general_store(int current_player_id_turn, int target_card_id);
 
 int check_end_game(){
   if (get_winner(player) > 0){
@@ -363,8 +365,14 @@ int main(void){
           drop_card(current_player_id_turn, target_card_id);
         }
       } 
-      else if ( target_card_id >= 48 && target_card_id >= 50 ){ //48-49 stagecoach AND 50 wells_fargo
+      else if ( target_card_id >= 48 && target_card_id <= 50 ){ //48-49 stagecoach AND 50 wells_fargo
         check_for_done_use_card = stagecoach(current_player_id_turn, target_card_id);
+        if (check_for_done_use_card == 1){
+          drop_card(current_player_id_turn, target_card_id);
+        }
+      }
+      else if ( target_card_id >= 51 && target_card_id <= 52 ){ //51-52 general store
+        check_for_done_use_card = general_store(current_player_id_turn, target_card_id);
         if (check_for_done_use_card == 1){
           drop_card(current_player_id_turn, target_card_id);
         }
@@ -572,7 +580,7 @@ void normal_draw_card(int current_player_id_turn){
 }
 
 void clean_fgets_buffer(char temp[]){
-  printf("'%s'\n",temp);
+  //printf("'%s'\n",temp);
   if(temp[strlen(temp)-1] != '\n') {
     char ch;
     while(ch = getchar() != '\n');
@@ -643,6 +651,7 @@ int beer(int current_player_id_turn, int target_card_id){
     clear_stdin();
       char ans[20];
       fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
       if(ans[0] == 'n'){
         return 0;
       }
@@ -663,6 +672,7 @@ int saloow(int current_player_id_turn, int target_card_id){
     clear_stdin();
     char ans[20];
     fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
       if(ans[0] == 'n'){
         return 0;
       }
@@ -690,6 +700,7 @@ int stagecoach(int current_player_id_turn, int target_card_id){
     clear_stdin();
     char ans[20];
     fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
     if(ans[0] == 'n'){
       return 0;
     }else if (ans[0]=='y'){
@@ -700,6 +711,95 @@ int stagecoach(int current_player_id_turn, int target_card_id){
       }
       printf("成功使用\n");
       sleep(1);
+      return 1;
+    }
+  }
+  return 0;
+}
+
+int general_store(int current_player_id_turn, int target_card_id){
+  int alive_count = 0;
+  int cardChoice[4];
+  int choosed_card_id, choosed_card_index = -1;
+  int current_chooser_id = current_player_id_turn;
+  while(1){
+    printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
+    char ans[20];
+    char choose[20];
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
+    if(ans[0] == 'n'){
+      return 0;
+    }else if (ans[0] == 'y'){
+      system("clear");
+      print_allPlayers(player, 0);
+      // get alive player mount & initialize cardChoice
+      for (int i=0; i<4; i++){
+        cardChoice[i] = -17492058;
+        if (player[i].health > 0){
+          alive_count ++;
+        }
+      }
+      // get cardChoice
+      for (int i=0; i<alive_count; i++){
+        if(draw_card_top != -1){
+          draw_card[draw_card_top] = 1;
+          cardChoice[i] = draw_card_top;
+          draw_card_top = -1;
+        }
+        else{
+          while(1){
+            int draw_card_num = rand() % 80;
+            if( draw_card[draw_card_num] == 0 ){
+              draw_card[draw_card_num] = 1;
+              cardChoice[i] = draw_card_num;
+              break;
+            }
+          }
+        }
+      }
+      // everyone choose 1 card into hand card
+      for (int i=0; i<alive_count; i++){ //everyone
+        printf("\n");
+        for (int j=0; j<4; j++){ //cards that can be choosed
+          if (cardChoice[j] >= 0){
+            printf("%3d. %s\n", cardChoice[j], card[cardChoice[j]].name);
+          }
+        }
+        while(1){ //get chosed card id
+          printf("player%d, 請從以上卡牌中輸入要加入手牌的牌的編號 : ", current_chooser_id);
+          clear_stdin();
+          fgets(choose,20,stdin);
+          clean_fgets_buffer(choose);
+          choosed_card_id = atoi(choose);
+          choosed_card_index = -1;
+          for (int j=0; j<4; j++){
+            if (choosed_card_id == cardChoice[j]){
+              choosed_card_index = j;
+              break;
+            }
+          }
+          if (choosed_card_index < 0){
+            printf("您輸入的編號並非抽出的牌之一\n");
+            continue;
+          }
+          break;
+        }
+        // put the card into current_chooser_id's hand
+        draw_card[cardChoice[choosed_card_index]] = 1;
+        player[current_chooser_id-1].hand[cardChoice[choosed_card_index]] = 1;
+        player[current_chooser_id-1].card_amount ++;
+        cardChoice[choosed_card_index] = -17492058;
+        //find next chooser
+        current_chooser_id = left(current_chooser_id); 
+        while(player[current_chooser_id-1].health <= 0){ //skip dead player
+          current_chooser_id = left(current_chooser_id); 
+        }
+      }
+      printf("\n成功使用\n");
+      printf("全部玩家都從雜貨店中選好牌了，現在請Player%d繼續出牌\n", current_player_id_turn);
+      sleep(3);
       return 1;
     }
   }
