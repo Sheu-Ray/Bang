@@ -12,6 +12,7 @@ int fold_card[80] = {0}; //棄卡堆
 int fold_card_flag = 0;  //棄卡數量
 void drop_card(int current_player_id_turn,int target_card_id);
 void normal_draw_card(int current_player_id_turn);
+void check_draw_card();
 
 struct CARD card[80];     //卡牌定義
 struct CAREER career[16]; //角色卡定義
@@ -27,15 +28,19 @@ int get_winner(struct Player player[4]);
 void Black_Jack(int current_player_id_turn);
 void Pedro_Ramirez(int current_player_id_turn);
 void Kit_Carlson(int current_player_id_turn);
+void Vulture_Sam();
+
 
 void print_allPlayers(struct Player player[4], int viewer);
 void print_hand(struct Player player);
 void print_winner(struct Player player[4], int winner);
 void print_allPosition(struct Player player[4]); //end of game
 int left(int self); //ID: 1-4
+int distance(struct Player player[4], int self, int target); // self & target: 1-4
 
 int bang(int current_player_id_turn, int target_card_id);
 int beer(int current_player_id_turn, int target_card_id);
+void auto_beer();
 int saloow(int current_player_id_turn, int target_card_id);
 int stagecoach(int current_player_id_turn, int target_card_id);
 int general_store(int current_player_id_turn, int target_card_id);
@@ -237,9 +242,6 @@ int main(void){
         }
       }
     }
-    else if( player[current_player_id_turn-1].career == -2 ){
-
-    }
 
 
     if( normal ){ //normal
@@ -247,20 +249,6 @@ int main(void){
       sleep(2);
       normal_draw_card(current_player_id_turn);
       normal_draw_card(current_player_id_turn);
-      
-      /*
-      for( int j = 0 ;j < 2 ; j++){ //張數
-        while(1){
-          int draw_card_num = rand() % 80;
-          if( draw_card[draw_card_num] == 0 ){
-            draw_card[draw_card_num] = 1;
-            player[current_player_id_turn-1].hand[draw_card_num] = 1;
-            player[current_player_id_turn-1].card_amount++;
-            break;
-          }
-        }
-      }
-      */
 
       system("clear");
       print_allPlayers(player,current_player_id_turn);
@@ -290,6 +278,7 @@ int main(void){
       printf("請選擇要出的卡片號碼 (0~79) [-1為結束出牌階段] : ");
       char ans_num[20];
       fgets(ans_num,20,stdin);
+      clean_fgets_buffer(ans_num);
       int target_card_id = atoi(ans_num);
       if( target_card_id == 0 && (ans_num[0] != '0') ){
         printf("%s不是合法的輸入\n",ans_num);
@@ -304,8 +293,8 @@ int main(void){
       else if( target_card_id == -1 ){
         system("clear");
         print_allPlayers(player,current_player_id_turn);
-        printf("\n結束出牌階段 將輪到下一位玩家的回合\n");
-        sleep(3);
+        printf("\n結束出牌階段\n");
+        sleep(1);
         break;
       }else{
         printf("所選擇的號碼是 %d \n",target_card_id);
@@ -320,7 +309,10 @@ int main(void){
       int check_for_done_use_card = 0; //確認是否有完成使用卡片 有則要丟棄
 
       if( target_card_id >= 0 && target_card_id <= 24 ){ //0-24 bang
-        if(check_bang == 1){
+        if(check_bang == 1 \
+        && player[current_player_id_turn-1].career != 15 \
+        && player[current_player_id_turn-1].weapon != 72 \
+        && player[current_player_id_turn-1].weapon != 73 ){
           printf("本回合已使用過bang!\n");
           sleep(1);
           continue;
@@ -378,17 +370,57 @@ int main(void){
         }
       }
 
-      //only for test: 把出牌動作當棄牌用
-      /*
-      if ( player[current_player_id_turn-1].hand[target_card_id] ){
-        drop_card(current_player_id_turn,target_card_id);
-      }
-      */
+      // 檢查死亡 beer 自動回血;
+      auto_beer();
+      Vulture_Sam(); //接收卡牌
       end_game = check_end_game(); //每完成一次出牌要檢查
       if(end_game == 1) break;
     }
+    if(end_game == 1) break;
+    //多餘牌要棄掉
+    while(player[current_player_id_turn-1].card_amount > player[current_player_id_turn-1].health){
+      system("clear");
+      print_allPlayers(player,current_player_id_turn);
+      printf("\n持有手牌如下");
+      print_hand(player[current_player_id_turn-1]);
+      printf("你的手牌數量大於生命 進入棄牌階段\n");
+      printf("你還需要棄掉 %d 張卡片\n",player[current_player_id_turn-1].card_amount - player[current_player_id_turn-1].health);
+      sleep(1);
+      printf("請選擇要棄掉的卡牌號碼 : ");
+      char ans_num[20];
+      clear_stdin();
+      fgets(ans_num,20,stdin);
+      clean_fgets_buffer(ans_num);
+      int target_card_id = atoi(ans_num);
+      if( target_card_id == 0 && (ans_num[0] != '0') ){
+        printf("%s不是合法的輸入\n",ans_num);
+        sleep(1);
+        continue;
+      }
+      if( target_card_id > 79 || target_card_id < -1 ){
+        printf("%s不是合法的輸入\n",ans_num);
+        sleep(1);
+        continue;
+      }
+      if(player[current_player_id_turn-1].hand[target_card_id] == 0){
+        printf("未持有這張牌 請重新選擇\n");
+        sleep(1);
+        continue;
+      }
+      else{
+        drop_card(current_player_id_turn,target_card_id);
+      }
+    }
+
+    system("clear");
+    print_allPlayers(player,current_player_id_turn);
+    printf("你的回合已經結束 3秒後將進入下一位玩家的回合\n");
+    sleep(3);
 
     current_player_id_turn = (current_player_id_turn) % 4 + 1;  //1~4
+    while(player[current_player_id_turn-1].health <1 ){
+      current_player_id_turn = (current_player_id_turn) % 4 + 1;  //1~4
+    }
     
     //only for test - kill player of specific postion
     /*
@@ -561,10 +593,11 @@ void Kit_Carlson(int current_player_id_turn){
 }
 
 void normal_draw_card(int current_player_id_turn){
+  check_draw_card();
   if(draw_card_top != -1){
-      draw_card[draw_card_top] = 1;
-      player[current_player_id_turn-1].hand[draw_card_top] = 1;
-      draw_card_top = -1;
+    draw_card[draw_card_top] = 1;
+    player[current_player_id_turn-1].hand[draw_card_top] = 1;
+    draw_card_top = -1;
   }
   else{
     while(1){
@@ -610,11 +643,15 @@ void drop_card(int current_player_id_turn,int target_card_id){
   fold_card_flag ++;
 }
 int bang(int current_player_id_turn, int target_card_id){
+  int target_player_id;
+  int dis;
+
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
     clear_stdin();
     char ans[20];
     fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
     if(ans[0] == 'n'){
       return 0;
     }
@@ -624,7 +661,8 @@ int bang(int current_player_id_turn, int target_card_id){
         clear_stdin();
         printf("選擇一名其他玩家(1~4) : ");
         fgets(ans,20,stdin);
-        int target_player_id = atoi(ans);
+        clean_fgets_buffer(ans);
+        target_player_id = atoi(ans);
         if(target_player_id ==current_player_id_turn){
           printf("您不能選擇自己 請重新選取\n");
           sleep(1);
@@ -635,14 +673,362 @@ int bang(int current_player_id_turn, int target_card_id){
           sleep(1);
           continue;
         }
-      player[target_player_id-1].health--;
-      printf("成功使用\n");
+        if( player[target_player_id-1].health < 1 ){
+          printf("目標玩家已死亡 請重新選取\n");
+          sleep(1);
+          continue;
+        }
+        break;
+      }
+      printf("player%d 向 player%d 使用了bang!\n",current_player_id_turn,target_player_id);
       sleep(1);
-      return 1;
+      //dis
+      dis = distance(player, current_player_id_turn, target_player_id); // 1 ~ 4
+
+      //射程 range
+      int range = 1;
+      if(  player[current_player_id_turn-1].weapon == 74 \
+        || player[current_player_id_turn-1].weapon == 75 \
+        || player[current_player_id_turn-1].weapon == 76 ){
+          range = 2;
+      }
+      else if( player[current_player_id_turn-1].weapon == 77){
+          range = 3;
+      }
+      else if( player[current_player_id_turn-1].weapon == 78){
+          range = 4;
+      }
+      else if( player[current_player_id_turn-1].weapon == 79){
+          range = 5;
+      }
+
+      if(dis > range){ // bug?
+        printf("此名玩家在射程範圍之外 將返回出牌階段\n");
+        sleep(1);
+        return 0;
+      }
+
+      // missed
+      int for_miss_card_num = -1;
+      int missed = 1; // basic 1
+      if( player[current_player_id_turn-1].career == 12){
+        missed = 2;
+      }
+      if( player[target_player_id-1].career == 5 ){ //角色能力 自帶啤酒桶
+        printf("對方為Jourdonnais 發動了角色能力！將開始進行抽牌檢定\n");
+        sleep(1);
+        //抽牌檢定
+        check_draw_card();
+        if(draw_card_top != -1){
+          draw_card[draw_card_top] = 1;
+          for_miss_card_num = draw_card_top;
+          draw_card_top = -1;
+        }
+        else{
+          while(1){
+            int draw_card_num = rand() % 80;
+            if( draw_card[draw_card_num] == 0 ){
+              draw_card[draw_card_num] = 1;
+              for_miss_card_num = draw_card_num;
+              break;
+            }
+          }
+        }
+        if(card[for_miss_card_num].suit == 2){ //成功判定
+          printf("對方使用了角色能力 成功躲過\n");
+          sleep(1);
+          missed--;
+        }
+        else{
+          printf("對方使用了角色能力 判定失敗\n");
+          sleep(1);
+        }
+        fold_card[fold_card_flag] = for_miss_card_num;
+        fold_card_flag ++;
+      }
+
+      if(missed < 1){
+        printf("對方幸運的躲過了你的子彈\n");
+        sleep(1);
+        return 1;
+      }
+
+      // 裝備啤酒桶 
+      if( player[target_player_id-1].barrel != -1){
+        printf("對方為有裝備啤酒桶！將開始進行抽牌檢定\n");
+        sleep(1);
+        //抽牌檢定
+        check_draw_card();
+        if(draw_card_top != -1){
+          draw_card[draw_card_top] = 1;
+          for_miss_card_num = draw_card_top;
+          draw_card_top = -1;
+        }
+        else{
+          while(1){
+            int draw_card_num = rand() % 80;
+            if( draw_card[draw_card_num] == 0 ){
+              draw_card[draw_card_num] = 1;
+              for_miss_card_num = draw_card_num;
+              break;
+            }
+          }
+        }
+        if(card[for_miss_card_num].suit == 2){ //成功判定
+          printf("對方裝備的啤酒桶 成功躲過\n");
+          sleep(1);
+          missed--;
+        }
+        else{
+          if( player[target_player_id-1].career == 7){  //lucky duke
+            int for_miss_card_num2 = 0;
+            printf("對方為Lucky_Duke 將抽兩張卡 並選其一作為判定卡\n");
+            sleep(1);
+            //抽牌檢定
+            check_draw_card();
+            if(draw_card_top != -1){
+              draw_card[draw_card_top] = 1;
+              for_miss_card_num2 = draw_card_top;
+              draw_card_top = -1;
+            }
+            else{
+              while(1){
+                int draw_card_num = rand() % 80;
+                if( draw_card[draw_card_num] == 0 ){
+                  draw_card[draw_card_num] = 1;
+                  for_miss_card_num2 = draw_card_num;
+                  break;
+                }
+              }
+            }
+            if(card[for_miss_card_num2].suit == 2){ //成功判定
+              printf("對方裝備的啤酒桶 成功躲過\n");
+              sleep(1);
+              missed--;
+            }
+            else{
+              printf("對方裝備的啤酒桶 判定失敗\n");
+              sleep(1);
+            }
+            fold_card[fold_card_flag] = for_miss_card_num2;
+            fold_card_flag ++;
+          }
+          else{
+            printf("對方裝備的啤酒桶 判定失敗\n");
+            sleep(1);
+          }
+        }
+        fold_card[fold_card_flag] = for_miss_card_num;
+        fold_card_flag ++;
+      }
+
+      if(missed < 1){
+        printf("對方幸運的躲過了你的子彈\n");
+        sleep(1);
+        return 1;
+      }
+      
+      //失手
+      while(1){
+        int have_miss = 0;
+        for(int i = 25;i<37;i++){
+          if( player[target_player_id-1].hand[i] ) //25-36
+            have_miss++;
+        }
+
+        if(have_miss == 0){
+          printf("對方未持有missed\n");
+          sleep(1);
+          break;
+        }
+        else{
+          for(int i = 25;i<37;i++){
+            if( player[target_player_id-1].hand[i] ) {
+              printf("對方使用了失手！將開始進行抽牌檢定\n");
+              sleep(1);
+              //抽牌檢定
+              check_draw_card();
+              if(draw_card_top != -1){
+                draw_card[draw_card_top] = 1;
+                for_miss_card_num = draw_card_top;
+                draw_card_top = -1;
+              }
+              else{
+                while(1){
+                  int draw_card_num = rand() % 80;
+                  if( draw_card[draw_card_num] == 0 ){
+                    draw_card[draw_card_num] = 1;
+                    for_miss_card_num = draw_card_num;
+                    break;
+                  }
+                }
+              }
+              if(card[for_miss_card_num].suit == 2){ //成功判定
+                printf("對方使用了失手 成功躲過\n");
+                sleep(1);
+                missed--;
+                if(missed < 1){
+                  printf("對方幸運的躲過了你的子彈\n");
+                  sleep(1);
+                  return 1;
+                }
+              }
+
+              else{
+                if( player[target_player_id-1].career == 7){  //lucky duke
+                  int for_miss_card_num2 = 0;
+                  printf("對方為Lucky_Duke 將抽兩張卡 並選其一作為判定卡\n");
+                  sleep(1);
+                  //抽牌檢定
+                  check_draw_card();
+                  if(draw_card_top != -1){
+                    draw_card[draw_card_top] = 1;
+                    for_miss_card_num2 = draw_card_top;
+                    draw_card_top = -1;
+                  }
+                  else{
+                    while(1){
+                      int draw_card_num = rand() % 80;
+                      if( draw_card[draw_card_num] == 0 ){
+                        draw_card[draw_card_num] = 1;
+                        for_miss_card_num2 = draw_card_num;
+                        break;
+                      }
+                    }
+                  }
+                  if(card[for_miss_card_num2].suit == 2){ //成功判定
+                    printf("對方使用了失手 成功躲過\n");
+                    sleep(1);
+                    missed--;
+                  }
+                  else{
+                    printf("對方使用了失手 判定失敗\n");
+                    sleep(1);
+                  }
+                  fold_card[fold_card_flag] = for_miss_card_num2;
+                  fold_card_flag ++;
+                }
+                else{
+                  printf("對方使用了失手 判定失敗\n");
+                  sleep(1);
+                }
+              }
+
+              fold_card[fold_card_flag] = i;
+              fold_card_flag ++;
+              fold_card[fold_card_flag] = for_miss_card_num;
+              fold_card_flag ++;
+              player[target_player_id-1].hand[i] = 0;
+              player[target_player_id-1].card_amount--;
+            }
+
+          }
+        }
+      }
+
+      if( player[target_player_id-1].career == 2 ){  // bang = missed
+        while(1){
+          int have_miss = 0;
+          for(int i = 0;i<25;i++){
+            if( player[target_player_id-1].hand[i] ) //0-24
+              have_miss++;
+          }
+
+          if(have_miss == 0){
+            //printf("對方未持有missed\n");
+            //sleep(1);
+            break;
+          }
+          else{
+            for(int i = 0;i<25;i++){
+              if( player[target_player_id-1].hand[i] ) {
+                printf("對方使用了bang做為失手！將開始進行抽牌檢定\n");
+                sleep(1);
+                //抽牌檢定
+                int for_miss_card_num;
+                check_draw_card();
+                if(draw_card_top != -1){
+                  draw_card[draw_card_top] = 1;
+                  for_miss_card_num = draw_card_top;
+                  draw_card_top = -1;
+                }
+                else{
+                  while(1){
+                    int draw_card_num = rand() % 80;
+                    if( draw_card[draw_card_num] == 0 ){
+                      draw_card[draw_card_num] = 1;
+                      for_miss_card_num = draw_card_num;
+                      break;
+                    }
+                  }
+                }
+                if(card[for_miss_card_num].suit == 2){ //成功判定
+                  printf("對方使用了bang做為失手 成功躲過\n");
+                  sleep(1);
+                  missed--;
+                  if(missed < 1){
+                    printf("對方幸運的躲過了你的子彈\n");
+                    sleep(1);
+                    return 1;
+                  }
+                }
+                else{
+                  printf("對方使用了bang做為失手 判定失敗\n");
+                  sleep(1);
+                }
+                fold_card[fold_card_flag] = i;
+                fold_card_flag ++;
+                fold_card[fold_card_flag] = for_miss_card_num;
+                fold_card_flag ++;
+                player[target_player_id-1].hand[i] = 0;
+                player[target_player_id-1].card_amount--;
+              }
+
+            }
+          }
+        }
+      }
+
+      if(missed < 1){  // 保險
+        printf("對方幸運的躲過了你的子彈\n");
+        sleep(1);
+        return 1;
+      }
+      else{
+        printf("你的子彈 成功擊中對方！\n");
+        sleep(2);
+        player[target_player_id-1].health--;
+
+        if(player[target_player_id-1].career == 0){  //Bart_Cassidy
+          printf("對方為Bart_Cassidy 發動了角色能力[被傷害時將抽一張卡]\n");
+          sleep(1);
+          normal_draw_card(target_player_id);
+        }
+        else if(player[target_player_id-1].career == 3){  //El_Gringo
+          printf("對方為El_Gringo 發動了角色能力[被傷害時可隨機從你手上抽一張卡]\n");
+          sleep(1);
+          if(player[current_player_id_turn-1].card_amount < 1){
+            printf("你手上無卡牌可供對方抽取\n");
+            return 1;
+          }
+
+          while(1){
+            int draw_card_num = rand() % 80;
+            if( player[current_player_id_turn-1].hand[draw_card_num] == 1 ){
+              player[current_player_id_turn-1].hand[draw_card_num] = 0;
+              player[target_player_id-1].hand[draw_card_num] = 1;
+              break;
+            }
+          }
+          player[current_player_id_turn-1].card_amount -- ;
+          player[target_player_id-1].card_amount ++ ;
+          
+        }
+
+        return 1;
       }
     }
   }
-  //return 1;
 }
 
 int beer(int current_player_id_turn, int target_card_id){
@@ -804,4 +1190,95 @@ int general_store(int current_player_id_turn, int target_card_id){
     }
   }
   return 0;
+}
+
+void check_draw_card(){
+  int card_amount = 0;
+  for(int i=0;i<80;i++)
+    if(draw_card[i] == 0 )
+      card_amount++;
+
+  if( card_amount < 3){
+    for(int i=0;i<fold_card_flag;i++){
+      draw_card[fold_card[i]] = 0;
+      fold_card[i] = 0;
+    }
+    fold_card_flag = 0;
+  }
+}
+
+void Vulture_Sam(){
+  int player_Vulture_Sam = -1;
+  for(int i=0;i<4;i++){
+    if(player[i].career == 14){
+      player_Vulture_Sam = i;
+      break;
+    }
+  }
+  if(player_Vulture_Sam == -1) return;
+
+  if(player[player_Vulture_Sam].health < 1) return;
+
+  int check_die = -1;
+  for(int i=0;i<4;i++){
+    if(player[i].health < 1 && player[i].Vulture_Sam == 0){
+      player.Vulture_Sam = 1;
+      printf("player%d 發動了角色能力 [ 當一位玩家死亡時，接收該死亡玩家的手牌和場上的裝備牌到自己的手牌中。 ]\n",player_Vulture_Sam+1);
+      printf("拿走了死者所有持有的卡片\n");
+
+      if( player[i].weapon != -1 ){
+        player[player_Vulture_Sam].hand[ player[i].weapon ] = 1;
+        player[player_Vulture_Sam].card_amount++;
+      }
+      if( player[i].hourse != -1 ){
+        player[player_Vulture_Sam].hand[ player[i].hourse ] = 1;
+        player[player_Vulture_Sam].card_amount++;
+      }
+      if( player[i].jail != -1 ){
+        player[player_Vulture_Sam].hand[ player[i].jail ] = 1;
+        player[player_Vulture_Sam].card_amount++;
+      }
+      if( player[i].dynamic != -1 ){
+        player[player_Vulture_Sam].hand[ player[i].dynamic ] = 1;
+        player[player_Vulture_Sam].card_amount++;
+      }
+      if( player[i].scope != -1 ){
+        player[player_Vulture_Sam].hand[ player[i].scope ] = 1;
+        player[player_Vulture_Sam].card_amount++;
+      }
+      if( player[i].barrel != -1 ){
+        player[player_Vulture_Sam].hand[ player[i].barrel ] = 1;
+        player[player_Vulture_Sam].card_amount++;
+      }
+
+      if(player[i].card_amount > 0){
+        for(int j = 0;j<80;j++){
+          if(player[i].hand[j] == 1){
+            player[i].hand[j] = 0;
+            player[i].card_amount--;
+            player[player_Vulture_Sam].hand[j] = 1;
+            player[player_Vulture_Sam].card_amount++;
+
+          }
+        }
+      }
+      sleep(2);
+    }
+  }
+}
+
+void auto_beer(){
+  for(int i=0;i<4;i++){
+    if(player[i].health < 1){
+      for(int j=53;j<58;j++){
+        if(player[i].hand[j] != 0){
+          player[i].health++;
+          drop_card(i+1,j);
+          printf("player%d 遭受致命傷害 使用了啤酒回到1點血量\n",i+1);
+          sleep(2);
+          break;
+        }
+      }
+    }
+  }
 }
