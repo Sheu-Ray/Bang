@@ -3061,10 +3061,16 @@ int ai_use_card(int current_player_id_turn, int check_bang){
     return 37;
   }
   //bang: calamity janet沒missed時會保留1張bang
-  if ( !( player[current_player_id_turn-1].career == 2 && missed_count == 0 && bang_count <= 1 ) && check_bang != -2 ){
-    for ( int i=0; i<=24; i++ ){
-      if ( player[current_player_id_turn-1].hand[i] ){
-        return i;
+  // if ( !( player[current_player_id_turn-1].career == 2 && missed_count == 0 && bang_count <= 1 ) && check_bang != -2 ){
+  if ( check_bang != -2){
+    if ( check_bang != 1 \
+    || player[current_player_id_turn-1].career == 15 \
+    || player[current_player_id_turn-1].weapon == 72 \
+    || player[current_player_id_turn-1].weapon == 73 ){
+      for ( int i=0; i<=24; i++ ){
+        if ( player[current_player_id_turn-1].hand[i] ){
+          return i;
+        }
       }
     }
   }
@@ -3076,8 +3082,8 @@ int ai_use_card(int current_player_id_turn, int check_bang){
       }
     }
   }
-  //指定放棄 驚慌 > cat
-  for ( int i=40; i<=47; i++ ){
+  //指定放棄 cat
+  for ( int i=44; i<=47; i++ ){
     if ( player[current_player_id_turn-1].hand[i] ){
       return i;
     }
