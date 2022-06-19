@@ -2305,7 +2305,7 @@ void Vulture_Sam(){
       && player[j].jail != -1 \
       && player[j].dynamite != -1 \
       && player[j].scope != -1 \
-      && player[j].barrel != -1 \ ) continue;
+      && player[j].barrel != -1 ) continue;
       printf("player%d 已死亡 將丟棄手牌和場上的裝備牌。 ]\n",j+1);
       if( player[j].weapon != -1 ){
         fold_card[fold_card_flag] = player[j].weapon;
