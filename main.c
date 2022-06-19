@@ -527,6 +527,7 @@ int main(void){
       char ans_num[20];
       if ( player[current_player_id_turn-1].AI ){
         target_card_id = ai_use_card(current_player_id_turn, check_bang);
+        ans_num[0] != '0';
         printf("%d\n", target_card_id);
       }
       else{
@@ -2696,8 +2697,9 @@ int Barrel(int current_player_id_turn, int target_card_id){
       fgets(ans,20,stdin);
      }
     else if(player[current_player_id_turn-1].AI == 1){
-      ans[0] == 'y';
+      ans[0] = 'y';
     }
+
     clean_fgets_buffer(ans); 
     if (ans[0] == 'n'){
       return 0;
@@ -2747,7 +2749,7 @@ int Scope(int current_player_id_turn, int target_card_id){
       fgets(ans,20,stdin);
      }
     else if(player[current_player_id_turn-1].AI == 1){
-      ans[0] == 'y';
+      ans[0] = 'y';
     }
     clean_fgets_buffer(ans);
     if (ans[0] == 'n'){
@@ -2763,7 +2765,7 @@ int Scope(int current_player_id_turn, int target_card_id){
             fgets(ans,20,stdin);
           }
           else if(player[current_player_id_turn-1].AI == 1){
-            ans[0] == 'y';
+            ans[0] = 'y';
           }
           clean_fgets_buffer(ans);
           if (ans[0] == 'n'){
@@ -2798,7 +2800,7 @@ int Horse(int current_player_id_turn, int target_card_id){
       fgets(ans,20,stdin);
      }
     else if(player[current_player_id_turn-1].AI == 1){
-      ans[0] == 'y';
+      ans[0] = 'y';
     }
     clean_fgets_buffer(ans);
     if (ans[0] == 'n'){
@@ -2814,7 +2816,7 @@ int Horse(int current_player_id_turn, int target_card_id){
             fgets(ans,20,stdin);
           }
           else if(player[current_player_id_turn-1].AI == 1){
-            ans[0] == 'y';
+            ans[0] = 'y';
           }
           clean_fgets_buffer(ans);
           if (ans[0] == 'n'){
@@ -2941,7 +2943,8 @@ int Weapon(int current_player_id_turn, int target_card_id){
       fgets(ans,20,stdin);
     }
     else{
-      ans[0] == 'y';
+      printf("yes\n");
+      ans[0] = 'y';
     }
     clean_fgets_buffer(ans);
     if (ans[0] == 'n'){
@@ -2957,7 +2960,7 @@ int Weapon(int current_player_id_turn, int target_card_id){
             fgets(ans,20,stdin);
           }
           else if(player[current_player_id_turn-1].AI == 1){
-            ans[0] == 'y';
+            ans[0] = 'y';
           }
           clean_fgets_buffer(ans);
           if (ans[0] == 'n'){
