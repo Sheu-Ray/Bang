@@ -248,8 +248,9 @@ int main(void){
       sleep(3);
       current_player_id_turn = (current_player_id_turn) % 4 + 1;  //1~4
       while(player[current_player_id_turn-1].health <1 ){
-      current_player_id_turn = (current_player_id_turn) % 4 + 1;  //1~4
-      break;
+        current_player_id_turn = (current_player_id_turn) % 4 + 1;  //1~4
+        break;
+      }
     }
 	    
     //jail判定
@@ -773,6 +774,7 @@ int main(void){
     */
     //only for test - kill player of specific postion
 
+    
   }
   system("clear");
   print_winner(player, get_winner(player));
