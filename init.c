@@ -10,9 +10,9 @@ void initialization(){
   for( int i = 0 ;i < 4 ; i++){
     player[i].player_ID = i+1;
     player[i].weapon =  -1;
-    player[i].hourse =  -1;
+    player[i].horse =  -1;
     player[i].jail =    -1;
-    player[i].dynamic = -1;
+    player[i].dynamite = -1;
     player[i].scope =   -1;
     player[i].barrel =  -1;
   }
