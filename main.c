@@ -840,6 +840,11 @@ void Black_Jack(int current_player_id_turn){
       clear_stdin();
       printf("是否要用角色能力 :在抽牌階段，可以選擇亮出抽出的第二張牌(%3d. %s)，若該牌是紅心或方塊，可以再多抽一張牌 ( y | n ) :", ability, card[ability].name);
       char ans[20];
+      if(player[current_player_id_turn].AI){
+        ans[0] = 'n';
+        printf("no\n");
+        break;
+      }
       fgets(ans,20,stdin);
       clean_fgets_buffer(ans);
       if(ans[0] == 'y'){
@@ -2703,6 +2708,7 @@ int Barrel(int current_player_id_turn, int target_card_id){
     }
     else if(player[current_player_id_turn-1].AI == 1){
       ans[0] = 'y';
+      printf("yes\n");
     }
     if (ans[0] == 'n'){
       return 0;
@@ -2719,6 +2725,7 @@ int Barrel(int current_player_id_turn, int target_card_id){
           }
           else if(player[current_player_id_turn-1].AI == 1){
             ans[0] = 'y';
+            printf("yes\n");
           }
           if (ans[0] == 'n'){
             return 0;
@@ -2753,6 +2760,7 @@ int Scope(int current_player_id_turn, int target_card_id){
      }
     else if(player[current_player_id_turn-1].AI == 1){
       ans[0] = 'y';
+      printf("yes\n");
     }
     if (ans[0] == 'n'){
       return 0;
@@ -2769,6 +2777,7 @@ int Scope(int current_player_id_turn, int target_card_id){
           }
           else if(player[current_player_id_turn-1].AI == 1){
             ans[0] = 'y';
+	    printf("yes\n");
           }
           if (ans[0] == 'n'){
             return 0;
@@ -2803,6 +2812,7 @@ int Horse(int current_player_id_turn, int target_card_id){
      }
     else if(player[current_player_id_turn-1].AI == 1){
       ans[0] = 'y';
+      printf("yes\n");
     }
     if (ans[0] == 'n'){
       return 0;
@@ -2815,9 +2825,11 @@ int Horse(int current_player_id_turn, int target_card_id){
           clear_stdin();
           if(player[current_player_id_turn-1].AI != 1){
             fgets(ans,20,stdin);
+	    clean_fgets_buffer(ans);
           }
           else if(player[current_player_id_turn-1].AI == 1){
             ans[0] = 'y';
+	    printf("yes\n");
           }
           clean_fgets_buffer(ans);
           if (ans[0] == 'n'){
@@ -2961,6 +2973,7 @@ int Weapon(int current_player_id_turn, int target_card_id){
           }
           else if(player[current_player_id_turn-1].AI == 1){
             ans[0] = 'y';
+            printf("yes\n");
           }
           if (ans[0] == 'n'){
             return 0;
