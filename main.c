@@ -1809,10 +1809,16 @@ int cat_balou(int current_player_id_turn, int target_card_id){
 int indians(int current_player_id_turn, int target_card_id){
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
-    clear_stdin();
     char ans[20];
-    fgets(ans,20,stdin);
-    clean_fgets_buffer(ans);
+    if (player[current_player_id_turn-1].AI){
+      ans[0] = 'y';
+      printf("y\n");
+    }
+    else{
+      clear_stdin();
+      fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
+    }
     if (ans[0] == 'n'){
       return 0;
     }else if(ans[0] == 'y'){
