@@ -508,7 +508,7 @@ int main(void){
     while(1){
       for(int k = 0;k<4;k++){
         player[k].card_amount = 0;
-        for(int l = 0;i<80;l++){
+        for(int l = 0;l<80;l++){
           if(player[k].hand[l] != 0){
             player[k].card_amount++;
           }
