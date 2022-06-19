@@ -1345,86 +1345,106 @@ int bang(int current_player_id_turn, int target_card_id){
           break;
         }
         else{
-          for(int i = 25;i<37;i++){
-            if( player[target_player_id-1].hand[i] ) {
-              printf("對方使用了失手！將開始進行抽牌檢定\n");
-              sleep(1);
-              //抽牌檢定
-              check_draw_card();
-              if(draw_card_top != -1){
-                draw_card[draw_card_top] = 1;
-                for_miss_card_num = draw_card_top;
-                draw_card_top = -1;
-              }
-              else{
-                while(1){
-                  int draw_card_num = rand() % 80;
-                  if( draw_card[draw_card_num] == 0 ){
-                    draw_card[draw_card_num] = 1;
-                    for_miss_card_num = draw_card_num;
-                    break;
-                  }
-                }
-              }
-              if(card[for_miss_card_num].suit == 2){ //成功判定
-                printf("對方使用了失手 成功躲過\n");
+          if(0){
+            /*
+            for(int i = 25;i<37;i++){
+              if( player[target_player_id-1].hand[i] ) {
+                printf("對方使用了失手！將開始進行抽牌檢定\n");
                 sleep(1);
-                missed--;
-                if(missed < 1){
-                  printf("對方幸運的躲過了你的子彈\n");
-                  sleep(1);
-                  return 1;
+                //抽牌檢定
+                check_draw_card();
+                if(draw_card_top != -1){
+                  draw_card[draw_card_top] = 1;
+                  for_miss_card_num = draw_card_top;
+                  draw_card_top = -1;
                 }
-              }
-
-              else{
-                if( player[target_player_id-1].career == 7){  //lucky duke
-                  int for_miss_card_num2 = 0;
-                  printf("對方為Lucky_Duke 將抽兩張卡 並選其一作為判定卡\n");
-                  sleep(1);
-                  //抽牌檢定
-                  check_draw_card();
-                  if(draw_card_top != -1){
-                    draw_card[draw_card_top] = 1;
-                    for_miss_card_num2 = draw_card_top;
-                    draw_card_top = -1;
-                  }
-                  else{
-                    while(1){
-                      int draw_card_num = rand() % 80;
-                      if( draw_card[draw_card_num] == 0 ){
-                        draw_card[draw_card_num] = 1;
-                        for_miss_card_num2 = draw_card_num;
-                        break;
-                      }
+                else{
+                  while(1){
+                    int draw_card_num = rand() % 80;
+                    if( draw_card[draw_card_num] == 0 ){
+                      draw_card[draw_card_num] = 1;
+                      for_miss_card_num = draw_card_num;
+                      break;
                     }
                   }
-                  if(card[for_miss_card_num2].suit == 2){ //成功判定
-                    printf("對方使用了失手 成功躲過\n");
+                }
+                if(card[for_miss_card_num].suit == 2){ //成功判定
+                  printf("對方使用了失手 成功躲過\n");
+                  sleep(1);
+                  missed--;
+                  if(missed < 1){
+                    printf("對方幸運的躲過了你的子彈\n");
                     sleep(1);
-                    missed--;
+                    return 1;
+                  }
+                }
+
+                else{
+                  if( player[target_player_id-1].career == 7){  //lucky duke
+                    int for_miss_card_num2 = 0;
+                    printf("對方為Lucky_Duke 將抽兩張卡 並選其一作為判定卡\n");
+                    sleep(1);
+                    //抽牌檢定
+                    check_draw_card();
+                    if(draw_card_top != -1){
+                      draw_card[draw_card_top] = 1;
+                      for_miss_card_num2 = draw_card_top;
+                      draw_card_top = -1;
+                    }
+                    else{
+                      while(1){
+                        int draw_card_num = rand() % 80;
+                        if( draw_card[draw_card_num] == 0 ){
+                          draw_card[draw_card_num] = 1;
+                          for_miss_card_num2 = draw_card_num;
+                          break;
+                        }
+                      }
+                    }
+                    if(card[for_miss_card_num2].suit == 2){ //成功判定
+                      printf("對方使用了失手 成功躲過\n");
+                      sleep(1);
+                      missed--;
+                    }
+                    else{
+                      printf("對方使用了失手 判定失敗\n");
+                      sleep(1);
+                    }
+                    fold_card[fold_card_flag] = for_miss_card_num2;
+                    fold_card_flag ++;
                   }
                   else{
                     printf("對方使用了失手 判定失敗\n");
                     sleep(1);
                   }
-                  fold_card[fold_card_flag] = for_miss_card_num2;
-                  fold_card_flag ++;
                 }
-                else{
-                  printf("對方使用了失手 判定失敗\n");
-                  sleep(1);
-                }
+
+                fold_card[fold_card_flag] = i;
+                fold_card_flag ++;
+                fold_card[fold_card_flag] = for_miss_card_num;
+                fold_card_flag ++;
+                player[target_player_id-1].hand[i] = 0;
+                player[target_player_id-1].card_amount--;
               }
 
+            }
+            */
+          }
+          for(int i = 25;i<37;i++){
+            if( player[target_player_id-1].hand[i] ) {
+              printf("對方使用了失手！躲過了你的子彈\n");
+              sleep(1);
               fold_card[fold_card_flag] = i;
-              fold_card_flag ++;
-              fold_card[fold_card_flag] = for_miss_card_num;
               fold_card_flag ++;
               player[target_player_id-1].hand[i] = 0;
               player[target_player_id-1].card_amount--;
+              missed--;
+              if(missed < 1){  // 保險
+                printf("對方幸運的躲過了你的子彈\n");
+                sleep(1);
+                return 1;
+              }
             }
-
           }
         }
       }
@@ -1445,48 +1465,19 @@ int bang(int current_player_id_turn, int target_card_id){
           else{
             for(int i = 0;i<25;i++){
               if( player[target_player_id-1].hand[i] ) {
-                printf("對方使用了bang做為失手！將開始進行抽牌檢定\n");
+                printf("對方使用了bang做為失手 躲過了你的子彈\n");
                 sleep(1);
-                //抽牌檢定
-                int for_miss_card_num;
-                check_draw_card();
-                if(draw_card_top != -1){
-                  draw_card[draw_card_top] = 1;
-                  for_miss_card_num = draw_card_top;
-                  draw_card_top = -1;
-                }
-                else{
-                  while(1){
-                    int draw_card_num = rand() % 80;
-                    if( draw_card[draw_card_num] == 0 ){
-                      draw_card[draw_card_num] = 1;
-                      for_miss_card_num = draw_card_num;
-                      break;
-                    }
-                  }
-                }
-                if(card[for_miss_card_num].suit == 2){ //成功判定
-                  printf("對方使用了bang做為失手 成功躲過\n");
-                  sleep(1);
-                  missed--;
-                  if(missed < 1){
-                    printf("對方幸運的躲過了你的子彈\n");
-                    sleep(1);
-                    return 1;
-                  }
-                }
-                else{
-                  printf("對方使用了bang做為失手 判定失敗\n");
-                  sleep(1);
-                }
+                missed--;
                 fold_card[fold_card_flag] = i;
-                fold_card_flag ++;
-                fold_card[fold_card_flag] = for_miss_card_num;
                 fold_card_flag ++;
                 player[target_player_id-1].hand[i] = 0;
                 player[target_player_id-1].card_amount--;
+                if(missed < 1){
+                  printf("對方幸運的躲過了你的子彈\n");
+                  sleep(1);
+                  return 1;
+                }
               }
-
             }
           }
         }
