@@ -930,6 +930,7 @@ void Kit_Carlson(int current_player_id_turn){
       }
     }
   }
+  sleep(1);
   printf("以上是牌堆的前三張牌, 請輸入要放回牌堆的牌的編號：");
   while(1){
     clear_stdin();
@@ -955,6 +956,7 @@ void Kit_Carlson(int current_player_id_turn){
       player[current_player_id_turn-1].card_amount ++ ;
     }
   }
+  printf("\n");
   system("clear");
   print_allPlayers(player,current_player_id_turn);
   print_hand(player[current_player_id_turn-1]);
