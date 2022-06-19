@@ -391,7 +391,7 @@ int main(void){
           }
         }
         if (target_count <= 0){
-          printf("no player is 1 away from you\n");
+          printf("並沒有與您距離為1的玩家\n");
           sleep(1);
           continue;
         }
@@ -443,6 +443,7 @@ int main(void){
       else if (target_card_id >= 72 && target_card_id <= 79){ // 72-79 Weapon
         check_for_done_use_card = Weapon(current_player_id_turn, target_card_id);
       }
+      
       // 檢查死亡 beer 自動回血;
       auto_beer();
       Vulture_Sam(); //接收卡牌
@@ -1395,8 +1396,8 @@ int panic(int current_player_id_turn, int target_card_id){
         }
         printf("成功使用\n");
         sleep(1);
+        return 1;
       }
-      return 1;
     }
   }
   return 0;
@@ -1529,9 +1530,8 @@ int cat_balou(int current_player_id_turn, int target_card_id){
       printf("\n成功使用\n");
       printf("現在請Player%d繼續出牌\n", current_player_id_turn);
       sleep(3);
-      break;
+      return 1;
     }
-    return 1;
   } 
   return 0;
 }
@@ -1556,9 +1556,23 @@ int indians(int current_player_id_turn, int target_card_id){
               break;
             }
           }
+          // calamityJanet(bang=missed)
+          if (bang_to_drop < 0 && player[i].career == 2){ 
+            for (int j=25; j<=36; j++){
+              if (player[i].hand[j] == 1){
+                bang_to_drop = j;
+                break;
+              }
+            }
+          }
           if (bang_to_drop >= 0){ //drop that bang
             drop_card(i+1, bang_to_drop);
-            printf("Player%d 丟出一張Bang\n", i+1);
+            if (bang_to_drop < 25){
+              printf("Player%d 丟出一張Bang\n", i+1);
+            }
+            else{
+              printf("Player%d 丟出一張Missed\n", i+1);
+            }
             sleep(1);
           }
           else{ //-1 health
@@ -1570,9 +1584,8 @@ int indians(int current_player_id_turn, int target_card_id){
       }
       printf("\n成功使用\n");
       sleep(3);
-      break;
+      return 1;
     }
-    return 1;
   }
   return 0;
 }
@@ -1612,9 +1625,9 @@ int duel(int current_player_id_turn, int target_card_id){
         }
         
         // get 2 player's bang IDs
-        int current_bang[25], target_bang[25];
+        int current_bang[37], target_bang[37];
         int current_bang_index = 0, target_bang_index = 0;
-        for (int i=0; i<25; i++){
+        for (int i=0; i<37; i++){
           current_bang[i] = -1;
           target_bang[i] = -1;
         }
@@ -1628,12 +1641,35 @@ int duel(int current_player_id_turn, int target_card_id){
             target_bang_index ++;
           }
         }
+        //calamity janet
+        if ( player[current_player_id_turn-1].career == 2 ){
+          for (int i=25; i<=36; i++){
+            if (player[current_player_id_turn-1].hand[i] == 1){
+              current_bang[current_bang_index] = i;
+              current_bang_index ++;
+            }
+          }
+        }
+        if ( player[target_player_id-1].career == 2 ){
+          for (int i=25; i<=36; i++){
+            if (player[target_player_id-1].hand[i] == 1){
+              target_bang[target_bang_index] = i;
+              target_bang_index ++;
+            }
+          }
+        }
+        
         // duel 
         printf("\n");
-        for (int i=0; i<25; i++){
+        for (int i=0; i<37; i++){
           //target_player's turn
           if (target_bang[i] >= 0){
-            printf("Player%d 丟出一張Bang\n", target_player_id);
+            if (target_bang[i] <= 25){
+              printf("Player%d 丟出一張Bang\n", target_player_id);
+            }
+            else{
+              printf("Player%d 丟出一張Missed\n", target_player_id);
+            }
             drop_card(target_player_id, target_bang[i]);
             sleep(1);
           }
@@ -1645,7 +1681,12 @@ int duel(int current_player_id_turn, int target_card_id){
           }
           //current_player's turn
           if (current_bang[i] >= 0){
-            printf("Player%d 丟出一張Bang\n", current_player_id_turn);
+            if (current_bang[i] < 25){
+              printf("Player%d 丟出一張Bang\n", current_player_id_turn);
+            }
+            else{
+              printf("Player%d 丟出一張Missed\n", current_player_id_turn);
+            }
             drop_card(current_player_id_turn, current_bang[i]);
             sleep(1);
           }
@@ -1660,9 +1701,8 @@ int duel(int current_player_id_turn, int target_card_id){
       }
       printf("\n成功使用\n");
       sleep(3);
-      break;
+      return 1;
     }
-    return 1;
   }
   return 0;
 }
@@ -1688,7 +1728,7 @@ int gatling(int current_player_id_turn, int target_card_id){
       
       printf("\n成功使用\n");
       sleep(3);
-      break;
+      return 1;
     }
   }
 	return 0;
