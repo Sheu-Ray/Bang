@@ -59,7 +59,7 @@ char * getCareer(int career){
 	return NULL;
 }
 
-int left(int self){
+int right(int self){
 	if (self == 1){
 		return 4;
 	}
@@ -68,7 +68,7 @@ int left(int self){
 	}
 }
 
-int right(int self){
+int left(int self){
 	if (self == 4){
 		return 1;
 	}
