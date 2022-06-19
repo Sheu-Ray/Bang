@@ -70,7 +70,15 @@ int check_end_game(){
 
 int main(void){
   initialization();
-  system("clear");
+  /*
+  for(int i=0;i<80;i++){
+    printf("%d = %s",i,card[i].description);
+  }
+  for(int i=0;i<16;i++){
+    printf("%d = %s\n",i,career[i].description);
+  }
+  */
+  //system("clear");
   printf("請輸入遊玩人數(1~4) : ");
   int player_num = 0;
   char temp[20];
@@ -498,6 +506,14 @@ int main(void){
     //出牌階段
     int check_bang = 0; //檢查是否有用過bang
     while(1){
+      for(int k = 0;k<4;k++){
+        player[k].card_amount = 0;
+        for(int l = 0;i<80;l++){
+          if(player[k].hand[l] != 0){
+            player[k].card_amount++;
+          }
+        }
+      }
       //while( (ch = getchar()) !='\n' && ch != EOF );
       //setbuf(stdin,NULL);
       //fseek(stdin,0,SEEK_END);
