@@ -111,13 +111,13 @@ int distance(struct Player player[4], int self, int target){ //self&target: 1-4
 		dist --;
 	}
 	
-	//Mustang(hourse)
-	if (player[target-1].hourse == 66){
+	//Mustang(horse)
+	if (player[target-1].horse == 66){
 		dist ++;
 	}
 	
 	//Appolosa(hourse)
-	if (player[self-1].hourse == 67){
+	if (player[self-1].horse == 67){
 		dist --;
 	}
 	
@@ -181,8 +181,8 @@ void print_player(struct Player player[4], int viewer){
 		//career
 		printf("%s ", getCareer(player[i].career));
 		
-		//dynamic
-		if (player[i].dynamic == 1){
+		//dynamite
+		if (player[i].dynamite == 1){
 			printf("[D]");
 		}
 		else{
@@ -209,9 +209,9 @@ void print_player(struct Player player[4], int viewer){
 			printf("[Scope]");
 		}
 		
-		//hourse
-		if (player[i].hourse > 0){ 
-			printf("[%s]", card[player[i].hourse].name);
+		//horse
+		if (player[i].horse > 0){ 
+			printf("[%s]", card[player[i].horse].name);
 		}
 		
 		//barrel
