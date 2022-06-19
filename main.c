@@ -152,7 +152,7 @@ int main(void){
       print_hand(player[current_player_id_turn-1]);
     }
     else{
-      printf("電腦將開始自動操作\n");
+      printf("\n電腦將開始自動操作\n");
       sleep(1);
     }
 
@@ -517,7 +517,7 @@ int main(void){
 
       }
       else{
-        printf("player%d 自動操作中\n",current_player_id_turn);
+        printf("\nplayer%d 自動操作中\n",current_player_id_turn);
         print_hand(player[current_player_id_turn-1]); //for test
         sleep(1);
       }
@@ -703,7 +703,7 @@ int main(void){
       print_allPlayers(player,current_player_id_turn);
 
       if(player[current_player_id_turn-1].AI == 1){ //AI
-        printf("player%d 自動操作中\n",current_player_id_turn);
+        printf("\nplayer%d 自動操作中\n",current_player_id_turn);
         printf("你的手牌數量大於生命 進入棄牌階段\n");
         printf("你還需要棄掉 %d 張卡片\n",player[current_player_id_turn-1].card_amount - player[current_player_id_turn-1].health);
         sleep(1);
@@ -2891,6 +2891,11 @@ int Jail(int current_player_id_turn, int target_card_id){
         }
         if(player[target_player_id-1].jail != -1){
           printf("您不能選擇該玩家, 該玩家已經裝備Jail\n");
+          sleep(1);
+          return 0;
+        }
+        if(player[target_player_id-1].position == 1){
+          printf("您不能選擇該玩家, 該玩家是警長\n");
           sleep(1);
           return 0;
         }
