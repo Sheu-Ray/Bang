@@ -811,6 +811,7 @@ void Black_Jack(int current_player_id_turn){
       printf("是否要用角色能力 :在抽牌階段，可以選擇亮出抽出的第二張牌(%3d. %s)，若該牌是紅心或方塊，可以再多抽一張牌 ( y | n ) :", ability, card[ability].name);
       char ans[20];
       fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
       if(ans[0] == 'y'){
         system("clear");
         char tmp[20];
@@ -818,6 +819,7 @@ void Black_Jack(int current_player_id_turn){
         clear_stdin();
         printf("以上是第二張手牌, 待所有玩家看到後, 按任意鍵結束顯示：");
         fgets(tmp,20,stdin);
+        clean_fgets_buffer(tmp);
         while(1){
           int draw_card_num = rand() % 80;
           if( draw_card[draw_card_num] == 0 ){
@@ -881,6 +883,7 @@ void Kit_Carlson(int current_player_id_turn){
   while(1){
     clear_stdin();
     fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
     target_card = atoi(ans);
     if(target_card != cardChoice[0] && target_card != cardChoice[1] && target_card != cardChoice[2] ){
       printf("您輸入的編號並非抽出的牌之一 請重新輸入要放回牌堆的牌的編號：");
@@ -2787,6 +2790,7 @@ int Jail(int current_player_id_turn, int target_card_id){
         clear_stdin();
         printf("選擇一名其他玩家(1~4) : ");
         fgets(ans,20,stdin);
+        clean_fgets_buffer(ans);
         int target_player_id = atoi(ans);
         if(target_player_id == current_player_id_turn){
           printf("您不能選擇自己 請重新選取\n");
