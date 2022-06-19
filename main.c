@@ -1999,7 +1999,6 @@ int cat_balou(int current_player_id_turn, int target_card_id){
           clean_fgets_buffer(ans);
           choosed_card_id = atoi(ans);
         }
-        choosed_card_id = atoi(ans);
         if ( choosed_card_id < 0 || choosed_card_id > 79 ){
           printf("請重新輸入有效值\n");
           sleep(1);
