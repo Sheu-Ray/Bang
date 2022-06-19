@@ -145,7 +145,13 @@ int main(void){
   while( !(end_game) ){
     system("clear");
     print_allPlayers(player,current_player_id_turn);
-    print_hand(player[current_player_id_turn-1]);
+    if(player[current_player_id_turn-1].AI == 0){ //AI
+      print_hand(player[current_player_id_turn-1]);
+    }
+    else{
+      printf("電腦將開始自動操作\n");
+      sleep(1);
+    }
 
     // only for test
     // player[current_player_id_turn-1].career = 4;
@@ -164,19 +170,51 @@ int main(void){
     else if( player[current_player_id_turn-1].career == 4 ){
       while(1){
 
-        clear_stdin();
-
-        printf("是否要用角色能力 : 從其他玩家的手牌中抽取第一張卡 ( y | n ) : ");
+        //clear_stdin();
         char ans[20];
-        fgets(ans,20,stdin);
+        printf("是否要用角色能力 : 從其他玩家的手牌中抽取第一張卡 ( y | n ) : ");
+        if(player[current_player_id_turn-1].AI == 1){ //AI
+          sleep(1);
+          printf("yes\n");
+          ans[0] = 'y';
+          sleep(1);
+        }
+        else{
+          clear_stdin();
+          fgets(ans,20,stdin);
+          clean_fgets_buffer(ans);
+        }
         if(ans[0] == 'y'){
           //fix bug 如果所有其他玩家都沒有手牌
           normal = 0;
           while(1){
-            clear_stdin();
+            //clear_stdin();
+            int target_player_id = -1;
             printf("選擇一名其他玩家(1~4) : ");
-            fgets(ans,20,stdin);
-            int target_player_id = atoi(ans);
+            if(player[current_player_id_turn-1].AI == 1){ //AI
+              //if( player[current_player_id_turn-1].position == 1 ){
+                while(1){
+                  target_player_id = rand() % 4 + 1;
+                  if(target_player_id == current_player_id_turn){
+                    continue;
+                  }
+                  if(player[target_player_id-1].card_amount < 1){
+                    continue;
+                  }
+                  break;
+                }
+              //}
+              sleep(1);
+              printf("%d\n",target_player_id);
+              sleep(1);
+            }
+            else{
+              clear_stdin();
+              fgets(ans,20,stdin);
+              target_player_id = atoi(ans);
+              clean_fgets_buffer(ans);
+            }
+
             if(target_player_id ==current_player_id_turn){
               printf("您不能選擇自己 請重新選取\n");
               sleep(1);
@@ -1075,12 +1113,12 @@ int bang(int current_player_id_turn, int target_card_id){
 
         if(player[target_player_id-1].career == 0){  //Bart_Cassidy
           printf("對方為Bart_Cassidy 發動了角色能力[被傷害時將抽一張卡]\n");
-          sleep(1);
+          sleep(2);
           normal_draw_card(target_player_id);
         }
         else if(player[target_player_id-1].career == 3){  //El_Gringo
           printf("對方為El_Gringo 發動了角色能力[被傷害時可隨機從你手上抽一張卡]\n");
-          sleep(1);
+          sleep(2);
           if(player[current_player_id_turn-1].card_amount < 1){
             printf("你手上無卡牌可供對方抽取\n");
             return 1;
