@@ -25,6 +25,7 @@ void initialization(); //init.c card and career
 void clear_stdin();
 void clean_fgets_buffer(char temp[]);
 int get_winner(struct Player player[4]);
+int ai_attack_target(int invalid[4], int ai_id); //ai_id & retrun value: 1-4
 void Black_Jack(int current_player_id_turn);
 void Pedro_Ramirez(int current_player_id_turn);
 void Kit_Carlson(int current_player_id_turn);
@@ -272,14 +273,16 @@ int main(void){
     else if( player[current_player_id_turn-1].career == 9 ){ 
       if (fold_card_flag > 0){
         while (1){
-          clear_stdin();
           char ans[20];
+          printf("是否要使用角色能力 : 從棄牌堆中抽取第一張卡 ( y | n ) : ");
           if (player[current_player_id_turn-1].AI == 1){
             ans[0] == 'y';
+            printf("y\n");
           }
           else{
-            printf("是否要使用角色能力 : 從棄牌堆中抽取第一張卡 ( y | n ) : ");
+            clear_stdin();
             fgets(ans, 20, stdin);
+            clean_fgets_buffer(temp);
           }
           if (ans[0] == 'y'){
     	      normal = 0;
@@ -481,7 +484,7 @@ int main(void){
       else if (target_card_id >= 72 && target_card_id <= 79){ // 72-79 Weapon
         check_for_done_use_card = Weapon(current_player_id_turn, target_card_id);
       }
-      
+
       // 檢查死亡 beer 自動回血;
       auto_beer();
       Vulture_Sam(); //接收卡牌
@@ -753,6 +756,99 @@ void drop_card(int current_player_id_turn,int target_card_id){
   player[current_player_id_turn-1].card_amount --;
   fold_card[fold_card_flag] = target_card_id;
   fold_card_flag ++;
+}
+//ai_id & return value: 1-4   //NEVER return ai_id and dead player's ID
+//invalid[i]=1 means playeri+1 is invalid target for ai_id because of distance or other rulls
+int ai_attack_target(int invalid[4], int ai_id){
+  int sheriff = 0, outlaw1 = 0, outlaw2 = 0, renegade = 0; //player id 1-4
+  int attack_rank[3] = {0}; //put target id
+   
+  //get all position's player index
+  for (int i=1; i<=4; i++){
+    if (player[i-1].position == 1){
+      sheriff = i;
+    }
+    if (player[i-1].position == 3){
+      if (outlaw1 == 0){
+        outlaw1 = i;
+      }
+      else{
+        outlaw2 = i;
+      }
+    }
+    if (player[i-1].position == 4){
+      renegade = i;
+    }
+  }
+  //dead player : invlid = 1
+  for (int i=1; i<=4; i++){
+    if (player[i-1].health <= 0){
+      invalid[i-1] = 1;
+    }
+  }
+  //rank other players base on position
+  if (ai_id == sheriff){ //shreiff: health low >> health high
+    int tmp;
+    attack_rank[0] = outlaw1;
+    attack_rank[1] = outlaw2;
+    attack_rank[2] = renegade;
+    if ( player[attack_rank[0]-1].health > player[attack_rank[1]-1].health){
+      tmp = attack_rank[0];
+      attack_rank[0] = attack_rank[1];
+      attack_rank[1] = tmp;
+    }
+    if ( player[attack_rank[1]-1].health > player[attack_rank[2]-1].health){
+      tmp = attack_rank[1];
+      attack_rank[1] = attack_rank[2];
+      attack_rank[2] = tmp;
+    }
+    if ( player[attack_rank[0]-1].health > player[attack_rank[1]-1].health){
+      tmp = attack_rank[0];
+      attack_rank[0] = attack_rank[1];
+      attack_rank[1] = tmp;
+    }
+  }
+  if (ai_id == outlaw1 || ai_id == outlaw2){ //outlaw: sheriff > health high > health low
+    attack_rank[0] = sheriff;
+    if(ai_id == outlaw1){
+      if (player[outlaw2-1].health > player[renegade-1].health){
+        attack_rank[1] = outlaw2;
+        attack_rank[2] = renegade;
+      }
+      else{
+        attack_rank[1] = renegade;
+        attack_rank[2] = outlaw2;
+      }
+    }
+    else{
+      if (player[outlaw1-1].health > player[renegade-1].health){
+        attack_rank[1] = outlaw1;
+        attack_rank[2] = renegade;
+      }
+      else{
+        attack_rank[1] = renegade;
+        attack_rank[2] = outlaw1;
+      }
+    }
+  }
+  if (ai_id == renegade){ //renegade: health low outlaw > health high outlaw > sheriff
+    if (player[outlaw1-1].health < player[outlaw2-1].health){
+      attack_rank[0] = outlaw1;
+      attack_rank[1] = outlaw2;
+    }
+    else{
+      attack_rank[0] = outlaw2;
+      attack_rank[1] = outlaw1;
+    }
+    attack_rank[2] = sheriff;
+  }
+  //output target id base on rank
+  for (int i=0; i<3; i++){
+    if ( !invalid[attack_rank[i]-1] ){
+      return attack_rank[i];
+    }
+  }
+  return 0;
 }
 int bang(int current_player_id_turn, int target_card_id){
   int target_player_id;
@@ -1146,18 +1242,24 @@ int bang(int current_player_id_turn, int target_card_id){
 int beer(int current_player_id_turn, int target_card_id){
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
-    clear_stdin();
-      char ans[20];
+    char ans[20];
+    if (player[current_player_id_turn-1].AI){
+      printf("y\n");
+      ans[0] = 'y';
+    }
+    else{
+      clear_stdin();
       fgets(ans,20,stdin);
       clean_fgets_buffer(ans);
-      if(ans[0] == 'n'){
-        return 0;
-      }
-      else if (ans[0] == 'y'){
-        player[current_player_id_turn-1].health ++;
-        printf("成功使用\n");
-        sleep(1);
-        return 1;
+    }
+    if(ans[0] == 'n'){
+      return 0;
+    }
+    else if (ans[0] == 'y'){
+      player[current_player_id_turn-1].health ++;
+      printf("成功使用\n");
+      sleep(1);
+      return 1;
     }
   }
   return 0;
@@ -1167,10 +1269,16 @@ int saloow(int current_player_id_turn, int target_card_id){
   int health_limit = 0;
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
-    clear_stdin();
     char ans[20];
-    fgets(ans,20,stdin);
-    clean_fgets_buffer(ans);
+    if (player[current_player_id_turn-1].AI){
+      printf("y\n");
+      ans[0] = 'y';
+    }
+    else{
+      clear_stdin();
+      fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
+    }
       if(ans[0] == 'n'){
         return 0;
       }
@@ -1195,10 +1303,16 @@ int saloow(int current_player_id_turn, int target_card_id){
 int stagecoach(int current_player_id_turn, int target_card_id){
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
-    clear_stdin();
     char ans[20];
-    fgets(ans,20,stdin);
-    clean_fgets_buffer(ans);
+    if (player[current_player_id_turn-1].AI){
+      printf("y\n");
+      ans[0] = 'y';
+    }
+    else{
+      clear_stdin();
+      fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
+    }
     if(ans[0] == 'n'){
       return 0;
     }else if (ans[0]=='y'){
@@ -1222,11 +1336,17 @@ int general_store(int current_player_id_turn, int target_card_id){
   int current_chooser_id = current_player_id_turn;
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
-    clear_stdin();
     char ans[20];
     char choose[20];
-    fgets(ans,20,stdin);
-    clean_fgets_buffer(ans);
+    if (player[current_player_id_turn-1].AI){
+      ans[0] = 'y';
+      printf("y\n");
+    }
+    else{
+      clear_stdin();
+      fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
+    }
     if(ans[0] == 'n'){
       return 0;
     }else if (ans[0] == 'y'){
@@ -1241,6 +1361,7 @@ int general_store(int current_player_id_turn, int target_card_id){
       }
       // get cardChoice
       for (int i=0; i<alive_count; i++){
+        check_draw_card();
         if(draw_card_top != -1){
           draw_card[draw_card_top] = 1;
           cardChoice[i] = draw_card_top;
@@ -1267,10 +1388,21 @@ int general_store(int current_player_id_turn, int target_card_id){
         }
         while(1){ //get chosed card id
           printf("player%d, 請從以上卡牌中輸入要加入手牌的牌的編號 : ", current_chooser_id);
-          clear_stdin();
-          fgets(choose,20,stdin);
-          clean_fgets_buffer(choose);
-          choosed_card_id = atoi(choose);
+          if (player[current_chooser_id-1].AI){
+            for (int c=0; c<4; c++){
+              if (cardChoice[c] >= 0){
+                choosed_card_id = cardChoice[c];
+                break;
+              }             
+            }
+            printf("%d\n", choosed_card_id);
+          }
+          else{
+            clear_stdin();
+            fgets(choose,20,stdin);
+            clean_fgets_buffer(choose);
+            choosed_card_id = atoi(choose);
+          }
           choosed_card_index = -1;
           for (int j=0; j<4; j++){
             if (choosed_card_id == cardChoice[j]){
@@ -1308,19 +1440,37 @@ int panic(int current_player_id_turn, int target_card_id){
   int target_player_id;
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
-    clear_stdin();
     char ans[20];
-    fgets(ans,20,stdin);
-    clean_fgets_buffer(ans);
+    if (player[current_player_id_turn-1].AI){
+      printf("y\n");
+      ans[0] = 'y';
+    }
+    else{
+      clear_stdin();
+      fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
+    }
     if(ans[0] == 'n'){
       return 0;
     }else if (ans[0]=='y'){
+      int invalid[4];
+      for (int i=0; i<4; i++){
+        if ( distance(player, current_player_id_turn, i+1) != 1){
+          invalid[i] = 1;
+        }
+      }
       while(1){
         printf("請選擇一名與您距離為1的玩家(1~4) : ");
-        clear_stdin();
-        fgets(ans,20,stdin);
-        clean_fgets_buffer(ans);
-        target_player_id = atoi(ans);
+        if (player[current_player_id_turn-1].AI){
+          target_player_id = ai_attack_target(invalid, current_player_id_turn);
+          printf("%d\n", target_player_id);
+        }
+        else{
+          clear_stdin();
+          fgets(ans,20,stdin);
+          clean_fgets_buffer(ans);
+          target_player_id = atoi(ans);
+        }
         //check input target_player_id
         if(target_player_id ==current_player_id_turn){
           printf("您不能選擇自己 請重新選取\n");
@@ -1385,9 +1535,22 @@ int panic(int current_player_id_turn, int target_card_id){
         int choosed_card_id;
         while(1){
           printf("請輸入想要的牌的號碼 : ");
-          clear_stdin();
-          fgets(ans,20,stdin);
-          choosed_card_id = atoi(ans);
+          if (player[current_player_id_turn-1].AI){ //better weapon > barrel > random
+            if (player[target_player_id-1].weapon > player[current_player_id_turn-1].weapon){
+              choosed_card_id = player[target_player_id-1].weapon;
+            }
+            else if (player[target_player_id-1].barrel > -1){
+              choosed_card_id = player[target_player_id-1].barrel;
+            }else{
+              choosed_card_id = 80;
+            }
+            printf("%d\n", choosed_card_id);
+          }
+          else{
+            clear_stdin();
+            fgets(ans,20,stdin);
+            choosed_card_id = atoi(ans);
+          }
           if (choosed_card_id < 0 || choosed_card_id > 80){
             printf("請重新輸入有效值\n");
             sleep(1);
@@ -1447,20 +1610,31 @@ int cat_balou(int current_player_id_turn, int target_card_id){
 
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
-    clear_stdin();
     char ans[20];
-    fgets(ans,20,stdin);
-    clean_fgets_buffer(ans);
+    if (player[current_player_id_turn-1].AI){
+      ans[0] = 'y';
+      printf("y\n");
+    }
+    else{
+      clear_stdin();
+      fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
+    }
     if(ans[0] == 'n'){
       return 0;
     }else if (ans[0]=='y'){
       while(1){
-        //get target player ID
+        //get target player ID 
         printf("請選擇一名玩家(1~4) : ");
-        clear_stdin();
-        fgets(ans,20,stdin);
-        clean_fgets_buffer(ans);
-        target_player_id = atoi(ans);
+        if (player[current_player_id_turn-1].AI){
+          int invalid[4] = {0};
+        } 
+        else{
+          clear_stdin();
+          fgets(ans,20,stdin);
+          clean_fgets_buffer(ans);
+          target_player_id = atoi(ans);
+        }
         if ( target_player_id < 1 || target_player_id > 4 ){
           printf("請重新輸入有效值\n");
           sleep(1);
@@ -1525,11 +1699,31 @@ int cat_balou(int current_player_id_turn, int target_card_id){
       printf("Player%d，請從以上選擇一張牌放棄", target_player_id);
       int choosed_card_id;
       while(1){
-        clear_stdin();
-        char ans[20];
-        fgets(ans,20,stdin);
-        clean_fgets_buffer(ans);
-        choosed_card_id = atoi(ans);
+        if (player[target_player_id-1].AI){ //hand card > showed card
+          if (player[target_player_id-1].card_amount > 0){
+            for (int i=0; i<80; i++){
+              if (player[target_player_id-1].hand[i] > 0){
+                choosed_card_id = i;
+                break;
+              }
+            }
+          }else{
+            for (int i=0; i<80; i++){
+              if (target_player_card[0] > 0){
+                choosed_card_id = i;
+                break;
+              }
+            }
+          }
+          printf("%d\n", choosed_card_id);
+        }
+        else{
+          clear_stdin();
+          char ans[20];
+          fgets(ans,20,stdin);
+          clean_fgets_buffer(ans);
+          choosed_card_id = atoi(ans);
+        }
         if ( choosed_card_id < 0 || choosed_card_id > 79 ){
           printf("請重新輸入有效值\n");
           sleep(1);
@@ -1577,10 +1771,16 @@ int cat_balou(int current_player_id_turn, int target_card_id){
 int indians(int current_player_id_turn, int target_card_id){
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
-    clear_stdin();
     char ans[20];
-    fgets(ans,20,stdin);
-    clean_fgets_buffer(ans);
+    if (player[current_player_id_turn-1].AI){
+      ans[0] = 'y';
+      printf("y\n");
+    }
+    else{
+      clear_stdin();
+      fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
+    }
     if (ans[0] == 'n'){
       return 0;
     }else if(ans[0] == 'y'){
@@ -1632,20 +1832,33 @@ int duel(int current_player_id_turn, int target_card_id){
   int target_player_id;
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
-    clear_stdin();
     char ans[20];
-    fgets(ans,20,stdin);
-    clean_fgets_buffer(ans);
+    if (player[current_player_id_turn-1].AI){
+      ans[0] = 'y';
+      printf("y\n");
+    }
+    else{
+      clear_stdin();
+      fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
+    }
     if (ans[0] == 'n'){
       return 0;
     }else if(ans[0] == 'y'){
       while(1){
         //get target player ID
         printf("請選擇一名玩家(1~4) :  ");
-        clear_stdin();
-        fgets(ans,20,stdin);
-        clean_fgets_buffer(ans);
-        target_player_id = atoi(ans);
+        if (player[current_player_id_turn-1].AI){
+          int invalid[4] = {0};
+          target_player_id = ai_attack_target(invalid, current_player_id_turn);
+          printf("%d\n", target_player_id);
+        }
+        else{
+          clear_stdin();
+          fgets(ans,20,stdin);
+          clean_fgets_buffer(ans);
+          target_player_id = atoi(ans);
+        }
         if ( target_player_id < 1 || target_player_id > 4 ){
           printf("請重新輸入有效值\n");
           sleep(1);
@@ -1749,10 +1962,16 @@ int gatling(int current_player_id_turn, int target_card_id){
   int target_player_id;
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
-    clear_stdin();
     char ans[20];
-    fgets(ans,20,stdin);
-    clean_fgets_buffer(ans);
+    if (player[current_player_id_turn-1].AI){
+      ans[0] = 'y';
+      printf("y\n");
+    }
+    else{
+      clear_stdin();
+      fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
+    }
     if (ans[0] == 'n'){
       return 0;
     }
