@@ -455,7 +455,7 @@ int main(void){
           char ans[20];
           printf("是否要使用角色能力 : 從棄牌堆中抽取第一張卡 ( y | n ) : ");
           if (player[current_player_id_turn-1].AI == 1){
-            ans[0] == 'y';
+            ans[0] = 'y';
             printf("y\n");
           }
           else{
@@ -1908,6 +1908,8 @@ int cat_balou(int current_player_id_turn, int target_card_id){
         printf("請選擇一名玩家(1~4) : ");
         if (player[current_player_id_turn-1].AI){
           int invalid[4] = {0};
+          target_player_id = ai_attack_target(invalid, current_player_id_turn);
+          printf("%d\n", target_player_id);
         } 
         else{
           clear_stdin();
@@ -1976,7 +1978,7 @@ int cat_balou(int current_player_id_turn, int target_card_id){
         printf("%3d. %s\n", player[target_player_id-1].barrel, card[player[target_player_id-1].barrel].name);
       }      
       //target_player choose the card
-      printf("Player%d，請從以上選擇一張牌放棄", target_player_id);
+      printf("Player%d，請從以上選擇一張牌放棄 : ", target_player_id);
       int choosed_card_id;
       while(1){
         if (player[target_player_id-1].AI){ //hand card > showed card
@@ -3161,8 +3163,8 @@ int ai_use_card(int current_player_id_turn, int check_bang){
       }
     }
   }
-  //指定放棄 驚慌 > cat
-  for ( int i=40; i<=47; i++ ){
+  //指定放棄 cat
+  for ( int i=44; i<=47; i++ ){
     if ( player[current_player_id_turn-1].hand[i] ){
       return i;
     }
