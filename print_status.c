@@ -3,6 +3,7 @@
 #include "Bang_structure.h"
 
 extern struct CARD card[80];
+extern struct CAREER career[16];
 
 char * getPosition(int position){
 	switch(position){
@@ -229,12 +230,21 @@ void print_player(struct Player player[4], int viewer){
 	return;
 }
 
+void print_allCareer( struct Player player[4] ){
+	printf("\n");
+	for (int i=0; i<4; i++){
+		printf(" %s: %s", getCareer(player[i].career), career[player[i].career].description);
+	}
+	return;
+}
+
 // viewer: playerID(1-4) , viewer <= 0 may not print distance part
 void print_allPlayers(struct Player player[4], int viewer){
 	//印出公開身分: 警長&死掉的人的身分(歹徒.叛徒...) 
 	print_position(player[0], player[1], player[2], player[3]);
 	//印每個人攤在桌上的牌(生命、職業、裝備、炸彈監獄酒桶...) 
 	print_player(player, viewer);
+	print_allCareer(player);
 	return;
 }
 
@@ -289,3 +299,4 @@ void print_allPosition(struct Player player[4]){
 	}
 	return;
 }
+
