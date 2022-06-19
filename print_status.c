@@ -169,12 +169,16 @@ void print_player(struct Player player[4], int viewer){
 		printf("%d cards | ", player[i].card_amount);
 		
 		//distance
+		int d = distance(player, viewer, i+1);
+		if ( d < 0 ){
+			d = 0;
+		}
 		if (viewer > 0){
 			if ( i == viewer-1 || player[i].health <= 0 ){
 				printf("     | ");
 			}
 			else{
-				printf("d: %d | ", distance(player, viewer, i+1));
+				printf("d: %d | ", d);
 			}
 		}
 		
@@ -182,7 +186,7 @@ void print_player(struct Player player[4], int viewer){
 		printf("%s ", getCareer(player[i].career));
 		
 		//dynamite
-		if (player[i].dynamite == 1){
+		if (player[i].dynamite > 0 ){
 			printf("[D]");
 		}
 		else{
@@ -190,7 +194,7 @@ void print_player(struct Player player[4], int viewer){
 		}
 		
 		//jail
-		if (player[i].jail == 1){
+		if (player[i].jail > 0 ){
 			printf("[J]");
 		}
 		else{
