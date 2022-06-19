@@ -2816,7 +2816,7 @@ int Dynamite(int current_player_id_turn, int target_card_id){
     }
     return 1;
   }
-	return 0;
+  return 0;
 }
 
 int Weapon(int current_player_id_turn, int target_card_id){
@@ -2842,7 +2842,9 @@ int Weapon(int current_player_id_turn, int target_card_id){
             return 0;
           }
           else if(ans[0] == 'y'){
-            drop_card(current_player_id_turn, player[current_player_id_turn-1].weapon);
+            fold_card[fold_card_flag] = player[current_player_id_turn-1].weapon;
+            fold_card_flag++;
+            break;
           }
         }
       }
