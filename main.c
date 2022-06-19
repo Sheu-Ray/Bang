@@ -912,6 +912,11 @@ void Kit_Carlson(int current_player_id_turn){
   printf("以上是牌堆的前三張牌, 請輸入要放回牌堆的牌的編號：");
   while(1){
     clear_stdin();
+    if(player[current_player_id_turn-1].AI == 1)
+    {
+      target_card = cardChoice[0];
+      break;
+    }
     fgets(ans,20,stdin);
     clean_fgets_buffer(ans);
     target_card = atoi(ans);
