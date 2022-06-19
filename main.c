@@ -455,7 +455,7 @@ int main(void){
           char ans[20];
           printf("是否要使用角色能力 : 從棄牌堆中抽取第一張卡 ( y | n ) : ");
           if (player[current_player_id_turn-1].AI == 1){
-            ans[0] == 'y';
+            ans[0] = 'y';
             printf("y\n");
           }
           else{
