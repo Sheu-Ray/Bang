@@ -2695,12 +2695,11 @@ int Barrel(int current_player_id_turn, int target_card_id){
     char ans[20];
     if(player[current_player_id_turn-1].AI != 1){
       fgets(ans,20,stdin);
-     }
+      clean_fgets_buffer(ans); 
+    }
     else if(player[current_player_id_turn-1].AI == 1){
       ans[0] = 'y';
     }
-
-    clean_fgets_buffer(ans); 
     if (ans[0] == 'n'){
       return 0;
     }
@@ -2712,11 +2711,11 @@ int Barrel(int current_player_id_turn, int target_card_id){
           clear_stdin();
           if(player[current_player_id_turn-1].AI != 1){
             fgets(ans,20,stdin);
+            clean_fgets_buffer(ans);
           }
           else if(player[current_player_id_turn-1].AI == 1){
             ans[0] = 'y';
           }
-          clean_fgets_buffer(ans);
           if (ans[0] == 'n'){
             return 0;
           }
@@ -2732,9 +2731,8 @@ int Barrel(int current_player_id_turn, int target_card_id){
       player[current_player_id_turn-1].card_amount --;
       printf("\n成功使用\n");
       sleep(3);
-      break;
+      return 1;
     }
-    return 1;
   }
 	return 0;
 }
@@ -2747,11 +2745,11 @@ int Scope(int current_player_id_turn, int target_card_id){
     clear_stdin();
     if(player[current_player_id_turn-1].AI != 1){
       fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
      }
     else if(player[current_player_id_turn-1].AI == 1){
       ans[0] = 'y';
     }
-    clean_fgets_buffer(ans);
     if (ans[0] == 'n'){
       return 0;
     }
@@ -2763,11 +2761,11 @@ int Scope(int current_player_id_turn, int target_card_id){
           clear_stdin();
           if(player[current_player_id_turn-1].AI != 1){
             fgets(ans,20,stdin);
+            clean_fgets_buffer(ans);
           }
           else if(player[current_player_id_turn-1].AI == 1){
             ans[0] = 'y';
           }
-          clean_fgets_buffer(ans);
           if (ans[0] == 'n'){
             return 0;
           }
@@ -2783,9 +2781,8 @@ int Scope(int current_player_id_turn, int target_card_id){
       player[current_player_id_turn-1].card_amount --;
       printf("\n成功使用\n");
       sleep(3);
-      break;
+      return 1;
     }
-    return 1;
   }
 	return 0;
 }
@@ -2798,11 +2795,11 @@ int Horse(int current_player_id_turn, int target_card_id){
     clear_stdin();
     if(player[current_player_id_turn-1].AI != 1){
       fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
      }
     else if(player[current_player_id_turn-1].AI == 1){
       ans[0] = 'y';
     }
-    clean_fgets_buffer(ans);
     if (ans[0] == 'n'){
       return 0;
     }
@@ -2834,9 +2831,8 @@ int Horse(int current_player_id_turn, int target_card_id){
       player[current_player_id_turn-1].card_amount --;
       printf("\n成功使用\n");
       sleep(3);
-      break;
+      return 1;
     }
-    return 1;
   }
 	return 0;
 }
@@ -2884,10 +2880,9 @@ int Jail(int current_player_id_turn, int target_card_id){
         player[current_player_id_turn-1].card_amount --;
         printf("\n成功使用\n");
         sleep(3);
-        break;
+        return 1;
       }
     }
-    return 1;
   }
 	return 0;
 }
@@ -2926,9 +2921,8 @@ int Dynamite(int current_player_id_turn, int target_card_id){
       player[current_player_id_turn-1].card_amount --;
       printf("\n成功使用\n");
       sleep(3);
-      break;
+      return 1;
     }
-    return 1;
   }
   return 0;
 }
@@ -2940,13 +2934,14 @@ int Weapon(int current_player_id_turn, int target_card_id){
     clear_stdin();
     char ans[20];
     if(player[current_player_id_turn-1].AI != 1){
+      printf("test\n");
       fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
     }
     else{
       printf("yes\n");
       ans[0] = 'y';
     }
-    clean_fgets_buffer(ans);
     if (ans[0] == 'n'){
       return 0;
     }
@@ -2958,11 +2953,11 @@ int Weapon(int current_player_id_turn, int target_card_id){
           clear_stdin();
           if(player[current_player_id_turn-1].AI != 1){
             fgets(ans,20,stdin);
+            clean_fgets_buffer(ans);
           }
           else if(player[current_player_id_turn-1].AI == 1){
             ans[0] = 'y';
           }
-          clean_fgets_buffer(ans);
           if (ans[0] == 'n'){
             return 0;
           }
@@ -2978,9 +2973,8 @@ int Weapon(int current_player_id_turn, int target_card_id){
       player[current_player_id_turn-1].card_amount --;
       printf("\n成功使用\n");
       sleep(3);
-      break;
+      return 1;
     }
-    return 1;
   }
   return 0;
 }
