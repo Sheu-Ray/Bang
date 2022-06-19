@@ -170,7 +170,7 @@ void print_player(struct Player player[4], int viewer){
 		
 		//distance
 		if (viewer > 0){
-			if (distance(player, viewer, i+1) <= 0){ //0:self, -1:dead
+			if ( i == viewer-1 || player[i].health <= 0 ){
 				printf("     | ");
 			}
 			else{
