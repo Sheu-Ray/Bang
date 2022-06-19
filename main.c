@@ -2904,7 +2904,7 @@ int Jail(int current_player_id_turn, int target_card_id){
           sleep(1);
           return 0;
         }
-        player[target_player_id].jail = target_card_id;
+        player[target_player_id-1].jail = target_card_id;
         player[current_player_id_turn-1].hand[target_card_id] = 0;
         player[current_player_id_turn-1].card_amount --;
         printf("\n成功使用\n");
