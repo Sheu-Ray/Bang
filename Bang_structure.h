@@ -23,9 +23,9 @@ struct Player{
 	int position; //身分
 	int career;   //職業 
 	int weapon;   //武器 
-	int hourse;   //馬 
+	int horse;   //馬 
 	int jail;     //監獄  
-	int dynamic;  //炸彈 
+	int dynamite;  //炸彈 
 	int scope;    //瞄準鏡   
 	int barrel;   //酒桶 
 	int hand[80]; //手牌
