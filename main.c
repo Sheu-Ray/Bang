@@ -50,6 +50,12 @@ int indians(int current_player_id_turn, int target_card_id);
 int duel(int current_player_id_turn, int target_card_id);
 int gatling(int current_player_id_turn, int target_card_id);
 void gatling_each(int target_player_id);
+int Horse(int current_player_id_turn, int target_card_id);
+int Weapon(int current_player_id_turn, int target_card_id);
+int Dynamite(int current_player_id_turn, int target_card_id);
+int Jail(int current_player_id_turn, int target_card_id);
+int Scope(int current_player_id_turn, int target_card_id);
+int Barrel(int current_player_id_turn, int target_card_id);
 
 int check_end_game(){
   if (get_winner(player) > 0){
@@ -413,13 +419,30 @@ int main(void){
           drop_card(current_player_id_turn, target_card_id);
         }
       }
-      else if ( target_card_id == 37 ){ //60-62 gatling
+      else if ( target_card_id == 37 ){ //37 gatling
         check_for_done_use_card = gatling(current_player_id_turn, target_card_id);
         if (check_for_done_use_card == 1){
           drop_card(current_player_id_turn, target_card_id);
         }
       }
-      
+      else if (target_card_id >= 63 && target_card_id <= 64){ // 63-64 Barrel
+        check_for_done_use_card = Barrel(current_player_id_turn, target_card_id);
+      }
+      else if (target_card_id == 65 ){ // 65 Scope
+        check_for_done_use_card = Scope(current_player_id_turn, target_card_id);
+      }
+      else if (target_card_id >= 66 && target_card_id <= 67){ // 66-67 Horse
+        check_for_done_use_card = Horse(current_player_id_turn, target_card_id);
+      }
+      else if (target_card_id >= 68 && target_card_id <= 70){ // 68-70 Jail
+        check_for_done_use_card = Jail(current_player_id_turn, target_card_id);
+      }
+      else if (target_card_id ==  71){ // 71 Dynamite
+        check_for_done_use_card = Dynamite(current_player_id_turn, target_card_id);
+      }
+      else if (target_card_id >= 72 && target_card_id <= 79){ // 72-79 Weapon
+        check_for_done_use_card = Weapon(current_player_id_turn, target_card_id);
+      }
       // 檢查死亡 beer 自動回血;
       auto_beer();
       Vulture_Sam(); //接收卡牌
@@ -1285,7 +1308,7 @@ int panic(int current_player_id_turn, int target_card_id){
         /*
         player[target_player_id-1].weapon = 79;
         player[target_player_id-1].scope = 65;
-        player[target_player_id-1].dynamic = 71;
+        player[target_player_id-1].dynamite = 71;
         */
         //only for test
         
@@ -1299,13 +1322,13 @@ int panic(int current_player_id_turn, int target_card_id){
           showed_card[player[target_player_id-1].weapon] = 'w';
           printf("%3d. %s\n", player[target_player_id-1].weapon, card[player[target_player_id-1].weapon].name);
         }
-        if (player[target_player_id-1].hourse > -1){
-          showed_card[player[target_player_id-1].hourse] = 'h';
-          printf("%3d. %s\n", player[target_player_id-1].hourse, card[player[target_player_id-1].hourse].name);
+        if (player[target_player_id-1].horse > -1){
+          showed_card[player[target_player_id-1].horse] = 'h';
+          printf("%3d. %s\n", player[target_player_id-1].horse, card[player[target_player_id-1].horse].name);
         }
-        if (player[target_player_id-1].dynamic > -1){
-          showed_card[player[target_player_id-1].dynamic] = 'd';
-          printf("%3d. %s\n", player[target_player_id-1].dynamic, card[player[target_player_id-1].dynamic].name);
+        if (player[target_player_id-1].dynamite > -1){
+          showed_card[player[target_player_id-1].dynamite] = 'd';
+          printf("%3d. %s\n", player[target_player_id-1].dynamite, card[player[target_player_id-1].dynamite].name);
         }
         if (player[target_player_id-1].scope > -1){
           showed_card[player[target_player_id-1].scope] = 's';
@@ -1337,15 +1360,15 @@ int panic(int current_player_id_turn, int target_card_id){
             continue;
           }
           // current player get the card from target player
-          if(choosed_card_id < 80){ // hourse. weapon...
+          if(choosed_card_id < 80){ // horse. weapon...
             if (showed_card[choosed_card_id] == 'w'){
               player[target_player_id-1].weapon = -1;
             }
             if (showed_card[choosed_card_id] == 'h'){
-              player[target_player_id-1].hourse = -1;
+              player[target_player_id-1].horse = -1;
             }
             if (showed_card[choosed_card_id] == 'd'){
-              player[target_player_id-1].dynamic = -1;
+              player[target_player_id-1].dynamite = -1;
             }
             if (showed_card[choosed_card_id] == 's'){
               player[target_player_id-1].scope = -1;
@@ -1423,7 +1446,7 @@ int cat_balou(int current_player_id_turn, int target_card_id){
       /*
       player[target_player_id-1].weapon = 79;
       player[target_player_id-1].scope = 65;
-      player[target_player_id-1].dynamic = 71;
+      player[target_player_id-1].dynamite = 71;
       */
       //only for test
       
@@ -1443,13 +1466,13 @@ int cat_balou(int current_player_id_turn, int target_card_id){
         target_player_card[player[target_player_id-1].weapon] = 'w';
         printf("%3d. %s\n", player[target_player_id-1].weapon, card[player[target_player_id-1].weapon].name);
       }
-      if (player[target_player_id-1].hourse > 0){
-        target_player_card[player[target_player_id-1].hourse] = 'h';
-        printf("%3d. %s\n", player[target_player_id-1].hourse, card[player[target_player_id-1].hourse].name);
+      if (player[target_player_id-1].horse > 0){
+        target_player_card[player[target_player_id-1].horse] = 'h';
+        printf("%3d. %s\n", player[target_player_id-1].horse, card[player[target_player_id-1].horse].name);
       }
-      if (player[target_player_id-1].dynamic > 0){
-        target_player_card[player[target_player_id-1].dynamic] = 'd';
-        printf("%3d. %s\n", player[target_player_id-1].dynamic, card[player[target_player_id-1].dynamic].name);
+      if (player[target_player_id-1].dynamite > 0){
+        target_player_card[player[target_player_id-1].dynamite] = 'd';
+        printf("%3d. %s\n", player[target_player_id-1].dynamite, card[player[target_player_id-1].dynamite].name);
       }
       if (player[target_player_id-1].scope > 0){
         target_player_card[player[target_player_id-1].scope] = 's';
@@ -1487,10 +1510,10 @@ int cat_balou(int current_player_id_turn, int target_card_id){
             player[target_player_id-1].weapon = -1;
           }
           if ( target_player_card[choosed_card_id] == 'h' ){
-            player[target_player_id-1].hourse = -1;
+            player[target_player_id-1].horse = -1;
           }
           if ( target_player_card[choosed_card_id] == 'd' ){
-            player[target_player_id-1].dynamic = -1;
+            player[target_player_id-1].dynamite = -1;
           }
           if ( target_player_card[choosed_card_id] == 's' ){
             player[target_player_id-1].scope = -1;
@@ -1709,16 +1732,16 @@ void Vulture_Sam(){
         player[player_Vulture_Sam].hand[ player[i].weapon ] = 1;
         player[player_Vulture_Sam].card_amount++;
       }
-      if( player[i].hourse != -1 ){
-        player[player_Vulture_Sam].hand[ player[i].hourse ] = 1;
+      if( player[i].horse != -1 ){
+        player[player_Vulture_Sam].hand[ player[i].horse ] = 1;
         player[player_Vulture_Sam].card_amount++;
       }
       if( player[i].jail != -1 ){
         player[player_Vulture_Sam].hand[ player[i].jail ] = 1;
         player[player_Vulture_Sam].card_amount++;
       }
-      if( player[i].dynamic != -1 ){
-        player[player_Vulture_Sam].hand[ player[i].dynamic ] = 1;
+      if( player[i].dynamite != -1 ){
+        player[player_Vulture_Sam].hand[ player[i].dynamite ] = 1;
         player[player_Vulture_Sam].card_amount++;
       }
       if( player[i].scope != -1 ){
@@ -2040,4 +2063,170 @@ void gatling_each(int target_player_id){
     }
     return;
   }
+}
+
+int Barrel(int current_player_id_turn, int target_card_id){
+  int target_player_id;
+  while(1){
+    printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
+    char ans[20];
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
+    if (ans[0] == 'n'){
+      return 0;
+    }
+    else if(ans[0] == 'y'){
+      if(player[current_player_id_turn-1].barrel != -1){
+        while(1){
+          printf("目前已經裝備一張同類型裝備卡%3d. %s ",player[current_player_id_turn-1].barrel, card[player[current_player_id_turn-1].barrel].name);
+          printf("是否要棄掉此卡並裝備 %3d. %s( y | n ): ",target_card_id, card[target_card_id].name) ;
+          clear_stdin();
+          fgets(ans,20,stdin);
+          clean_fgets_buffer(ans);
+          if (ans[0] == 'n'){
+            return 0;
+          }
+          else if(ans[0] == 'y'){
+            drop_card(current_player_id_turn, player[current_player_id_turn-1].barrel);
+          }
+        }
+      }
+      player[current_player_id_turn-1].barrel = target_card_id;
+      player[current_player_id_turn-1].hand[target_card_id] = 0;
+      player[current_player_id_turn-1].card_amount --;
+      printf("\n成功使用\n");
+      sleep(3);
+      break;
+    }
+    return 1;
+  }
+	return 0;
+}
+
+int Scope(int current_player_id_turn, int target_card_id){
+  int target_player_id;
+  while(1){
+    printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
+    char ans[20];
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
+    if (ans[0] == 'n'){
+      return 0;
+    }
+    else if(ans[0] == 'y'){
+      if(player[current_player_id_turn-1].scope != -1){
+        while(1){
+          printf("目前已經裝備一張同類型裝備卡%3d. %s ",player[current_player_id_turn-1].scope, card[player[current_player_id_turn-1].scope].name);
+          printf("是否要棄掉此卡並裝備%3d. %s( y | n ): ",target_card_id, card[target_card_id].name) ;
+          clear_stdin();
+          fgets(ans,20,stdin);
+          clean_fgets_buffer(ans);
+          if (ans[0] == 'n'){
+            return 0;
+          }
+          else if(ans[0] == 'y'){
+            drop_card(current_player_id_turn, player[current_player_id_turn-1].scope);
+          }
+        }
+      }
+      player[current_player_id_turn-1].scope = target_card_id;
+      player[current_player_id_turn-1].hand[target_card_id] = 0;
+      player[current_player_id_turn-1].card_amount --;
+      printf("\n成功使用\n");
+      sleep(3);
+      break;
+    }
+    return 1;
+  }
+	return 0;
+}
+
+int Horse(int current_player_id_turn, int target_card_id){
+  int target_player_id;
+  while(1){
+    printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
+    char ans[20];
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
+    if (ans[0] == 'n'){
+      return 0;
+    }
+    else if(ans[0] == 'y'){
+      if(player[current_player_id_turn-1].horse != -1){
+        while(1){
+          printf("目前已經裝備一張同類型裝備卡%3d. %s ",player[current_player_id_turn-1].horse, card[player[current_player_id_turn-1].horse].name);
+          printf("是否要棄掉此卡並裝備%3d. %s( y | n ): ",target_card_id, card[target_card_id].name) ;
+          clear_stdin();
+          fgets(ans,20,stdin);
+          clean_fgets_buffer(ans);
+          if (ans[0] == 'n'){
+            return 0;
+          }
+          else if(ans[0] == 'y'){
+            drop_card(current_player_id_turn, player[current_player_id_turn-1].horse);
+          }
+        }
+      }
+      player[current_player_id_turn-1].horse = target_card_id;
+      player[current_player_id_turn-1].hand[target_card_id] = 0;
+      player[current_player_id_turn-1].card_amount --;
+      printf("\n成功使用\n");
+      sleep(3);
+      break;
+    }
+    return 1;
+  }
+	return 0;
+}
+
+int Jail(int current_player_id_turn, int target_card_id){
+
+return 0;
+}
+
+int Dynamite(int current_player_id_turn, int target_card_id){
+
+return 0;
+}
+
+int Weapon(int current_player_id_turn, int target_card_id){
+  int target_player_id;
+  while(1){
+    printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
+    char ans[20];
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
+    if (ans[0] == 'n'){
+      return 0;
+    }
+    else if(ans[0] == 'y'){
+      if(player[current_player_id_turn-1].weapon != -1){
+        while(1){
+          printf("目前已經裝備一張同類型裝備卡%3d. %s ",player[current_player_id_turn-1].weapon, card[player[current_player_id_turn-1].weapon].name);
+          printf("是否要棄掉此卡並裝備%3d. %s( y | n ): ",target_card_id, card[target_card_id].name) ;
+          clear_stdin();
+          fgets(ans,20,stdin);
+          clean_fgets_buffer(ans);
+          if (ans[0] == 'n'){
+            return 0;
+          }
+          else if(ans[0] == 'y'){
+            drop_card(current_player_id_turn, player[current_player_id_turn-1].weapon);
+          }
+        }
+      }
+      player[current_player_id_turn-1].weapon = target_card_id;
+      player[current_player_id_turn-1].hand[target_card_id] = 0;
+      player[current_player_id_turn-1].card_amount --;
+      printf("\n成功使用\n");
+      sleep(3);
+      break;
+    }
+    return 1;
+  }
+	return 0;
 }
