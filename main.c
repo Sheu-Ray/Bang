@@ -632,12 +632,12 @@ int main(void){
       else if ( target_card_id >= 40 && target_card_id <= 43 ){ //40-43 panic
         int target_count = 0;
         for (int p=1; p<=4; p++){
-          if (distance(player, current_player_id_turn, p) == 1){
+          if (distance(player, current_player_id_turn, p) <= 1){
             target_count ++;
           }
         }
         if (target_count <= 0){
-          printf("並沒有與您距離為1的玩家\n");
+          printf("並沒有與您距離1以內的玩家\n");
           sleep(1);
           continue;
         }
@@ -1735,12 +1735,12 @@ int panic(int current_player_id_turn, int target_card_id){
     }else if (ans[0]=='y'){
       int invalid[4];
       for (int i=0; i<4; i++){
-        if ( distance(player, current_player_id_turn, i+1) != 1){
+        if ( distance(player, current_player_id_turn, i+1) > 1){
           invalid[i] = 1;
         }
       }
       while(1){
-        printf("請選擇一名與您距離為1的玩家(1~4) : ");
+        printf("請選擇一名與您距離為1以內的玩家(1~4) : ");
         if (player[current_player_id_turn-1].AI){
           target_player_id = ai_attack_target(invalid, current_player_id_turn);
           printf("%d\n", target_player_id);
@@ -1767,8 +1767,8 @@ int panic(int current_player_id_turn, int target_card_id){
           sleep(1);
           continue;
         }
-        if(distance(player, current_player_id_turn, target_player_id) != 1){
-          printf("您只能選擇與您距離為1的玩家 請重新選取\n");
+        if(distance(player, current_player_id_turn, target_player_id) > 1){
+          printf("您只能選擇與您距離1以內的玩家 請重新選取\n");
           sleep(1);
           continue;
         }
