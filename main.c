@@ -2777,7 +2777,7 @@ int Scope(int current_player_id_turn, int target_card_id){
           }
           else if(player[current_player_id_turn-1].AI == 1){
             ans[0] = 'y';
-	    printf("yes\n");
+            printf("yes\n");
           }
           if (ans[0] == 'n'){
             return 0;
@@ -2825,13 +2825,12 @@ int Horse(int current_player_id_turn, int target_card_id){
           clear_stdin();
           if(player[current_player_id_turn-1].AI != 1){
             fgets(ans,20,stdin);
-	    clean_fgets_buffer(ans);
+            clean_fgets_buffer(ans);
           }
           else if(player[current_player_id_turn-1].AI == 1){
             ans[0] = 'y';
-	    printf("yes\n");
+            printf("yes\n");
           }
-          clean_fgets_buffer(ans);
           if (ans[0] == 'n'){
             return 0;
           }
@@ -2950,7 +2949,6 @@ int Weapon(int current_player_id_turn, int target_card_id){
     clear_stdin();
     char ans[20];
     if(player[current_player_id_turn-1].AI != 1){
-      printf("test\n");
       fgets(ans,20,stdin);
       clean_fgets_buffer(ans);
     }
