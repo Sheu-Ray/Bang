@@ -534,7 +534,7 @@ int main(void){
       }
       else{
         printf("\nplayer%d 自動操作中\n",current_player_id_turn);
-        print_hand(player[current_player_id_turn-1]); //for test
+        // print_hand(player[current_player_id_turn-1]); //for test
         sleep(1);
       }
 
