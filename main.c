@@ -527,7 +527,7 @@ int main(void){
       char ans_num[20];
       if ( player[current_player_id_turn-1].AI ){
         target_card_id = ai_use_card(current_player_id_turn, check_bang);
-        ans_num[0] != '0';
+        ans_num[0] = '0';
         printf("%d\n", target_card_id);
       }
       else{
@@ -2714,7 +2714,7 @@ int Barrel(int current_player_id_turn, int target_card_id){
             fgets(ans,20,stdin);
           }
           else if(player[current_player_id_turn-1].AI == 1){
-            ans[0] == 'y';
+            ans[0] = 'y';
           }
           clean_fgets_buffer(ans);
           if (ans[0] == 'n'){
@@ -3131,13 +3131,19 @@ int ai_use_card(int current_player_id_turn, int check_bang){
     return 37;
   }
   //bang: calamity janet沒missed時會保留1張bang
-  if ( !( player[current_player_id_turn-1].career == 2 && missed_count == 0 && bang_count <= 1 ) && check_bang != -2 ){
-    for ( int i=0; i<=24; i++ ){
-      if ( player[current_player_id_turn-1].hand[i] ){
-        return i;
+  if(check_bang != -2){
+    if(check_bang != 1 \
+    || player[current_player_id_turn-1].career == 15 \
+    || player[current_player_id_turn-1].weapon == 72 \
+    || player[current_player_id_turn-1].weapon == 73 ){
+      for ( int i=0; i<=24; i++ ){
+        if ( player[current_player_id_turn-1].hand[i] ){
+          return i;
+        }
       }
     }
   }
+
   //決鬥: 手上bang >= 2
   if ( bang_count >= 2 ){
     for ( int i=60; i<=62; i++ ){
