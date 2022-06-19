@@ -497,6 +497,7 @@ int main(void){
       }
       else{
         printf("player%d 自動操作中\n",current_player_id_turn);
+        print_hand(player[current_player_id_turn-1]); //for test
         sleep(1);
       }
 
@@ -545,6 +546,9 @@ int main(void){
           continue;
         }
         check_for_done_use_card = bang(current_player_id_turn,target_card_id);
+        if( check_for_done_use_card == -2 ){
+          check_bang = -2;
+        }
         if( check_for_done_use_card == 1 ){
           check_bang = 1;
           drop_card(current_player_id_turn,target_card_id);
@@ -1050,43 +1054,23 @@ int bang(int current_player_id_turn, int target_card_id){
 
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
-    clear_stdin();
     char ans[20];
-    fgets(ans,20,stdin);
-    clean_fgets_buffer(ans);
+    if(player[current_player_id_turn-1].AI == 1){ //AI
+      sleep(1);
+      printf("yes\n");
+      ans[0] = 'y';
+      sleep(1);
+    }
+    else{
+      clear_stdin();
+      fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
+    }
+
     if(ans[0] == 'n'){
       return 0;
     }
     else if( ans[0] == 'y' ) {
-      //choose player
-      while(1){
-        clear_stdin();
-        printf("選擇一名其他玩家(1~4) : ");
-        fgets(ans,20,stdin);
-        clean_fgets_buffer(ans);
-        target_player_id = atoi(ans);
-        if(target_player_id ==current_player_id_turn){
-          printf("您不能選擇自己 請重新選取\n");
-          sleep(1);
-          continue;
-        }
-        if(!(target_player_id>=1 && target_player_id<=4)){
-          printf("請重新輸入有效值\n");
-          sleep(1);
-          continue;
-        }
-        if( player[target_player_id-1].health < 1 ){
-          printf("目標玩家已死亡 請重新選取\n");
-          sleep(1);
-          continue;
-        }
-        break;
-      }
-      printf("player%d 向 player%d 使用了bang!\n",current_player_id_turn,target_player_id);
-      sleep(1);
-      //dis
-      dis = distance(player, current_player_id_turn, target_player_id); // 1 ~ 4
-
       //射程 range
       int range = 1;
       if(  player[current_player_id_turn-1].weapon == 74 \
@@ -1103,6 +1087,64 @@ int bang(int current_player_id_turn, int target_card_id){
       else if( player[current_player_id_turn-1].weapon == 79){
           range = 5;
       }
+
+      //choose player AI
+      if(player[current_player_id_turn-1].AI){
+        int invalid[4] = {0};
+        int k = 0;
+        for(int i = 0;i<4;i++){
+          dis = distance(player, current_player_id_turn, i+1); // 1 ~ 4
+          if(dis>range){
+            invalid[i] = 1;
+            continue;
+          }
+          if( current_player_id_turn == (i+1) ){
+            invalid[i] = 1;
+            continue;
+          }
+          if(player[i+1].health < 1){
+            invalid[i] = 1;
+            continue;
+          }
+          k++;
+        }
+        if(k<1){
+          return -2;
+        }else{
+          target_player_id = ai_attack_target(invalid,current_player_id_turn);
+        }
+      }
+      else{
+        //choose player
+        while(1){ //not AI
+          printf("選擇一名其他玩家(1~4) : ");
+          clear_stdin();
+          fgets(ans,20,stdin);
+          clean_fgets_buffer(ans);
+          target_player_id = atoi(ans);
+          if(target_player_id ==current_player_id_turn){
+            printf("您不能選擇自己 請重新選取\n");
+            sleep(1);
+            continue;
+          }
+          if(!(target_player_id>=1 && target_player_id<=4)){
+            printf("請重新輸入有效值\n");
+            sleep(1);
+            continue;
+          }
+          if( player[target_player_id-1].health < 1 ){
+            printf("目標玩家已死亡 請重新選取\n");
+            sleep(1);
+            continue;
+          }
+          break;
+        }
+      }
+
+      printf("player%d 向 player%d 使用了bang!\n",current_player_id_turn,target_player_id);
+      sleep(1);
+      //dis
+      dis = distance(player, current_player_id_turn, target_player_id); // 1 ~ 4
 
       if(dis > range){ // bug?
         printf("此名玩家在射程範圍之外 將返回出牌階段\n");
