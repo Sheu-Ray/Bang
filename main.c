@@ -26,8 +26,6 @@ void clear_stdin();
 void clean_fgets_buffer(char temp[]);
 int get_winner(struct Player player[4]);
 int ai_attack_target(int invalid[4], int ai_id); //ai_id & retrun value: 1-4
-int weapon_range(int weapon_id);
-int ai_use_card(int current_player_id_turn, int check_bang);
 void Black_Jack(int current_player_id_turn);
 void Pedro_Ramirez(int current_player_id_turn);
 void Kit_Carlson(int current_player_id_turn);
@@ -214,6 +212,15 @@ int main(void){
         else{
           printf("Player%d 判定失敗 損失3點血量\n", current_player_id_turn);
           player[current_player_id_turn-1].health -= 3;
+
+          if(player[current_player_id_turn-1].career == 0){  //Bart_Cassidy
+            printf("Player%d為Bart_Cassidy 發動了角色能力[被傷害時將抽一張卡], 共抽三張\n",current_player_id_turn);
+            sleep(2);
+            check_draw_card();
+            normal_draw_card(target_player_id);
+            normal_draw_card(target_player_id);
+            normal_draw_card(target_player_id);
+          }
           sleep(1);
         }
       }
@@ -233,6 +240,17 @@ int main(void){
     auto_beer();
     end_game = check_end_game();
     if(end_game == 1) break;
+    if( player[current_player_id_turn-1].health <= 0){
+      system("clear");
+      print_allPlayers(player,current_player_id_turn);
+      printf("player%d 陣亡 3秒後將進入下一位玩家的回合\n");
+      sleep(3);
+      current_player_id_turn = (current_player_id_turn) % 4 + 1;  //1~4
+      while(player[current_player_id_turn-1].health <1 ){
+      current_player_id_turn = (current_player_id_turn) % 4 + 1;  //1~4
+      break;
+    }
+    
 
     //jail判定
     int jail_skip_turn = -1;
@@ -499,22 +517,14 @@ int main(void){
       }
       else{
         printf("player%d 自動操作中\n",current_player_id_turn);
-        print_hand(player[current_player_id_turn-1]); //for test
         sleep(1);
       }
 
-     printf("請選擇要出的卡片號碼 (0~79) [-1為結束出牌階段] : ");
-      int target_card_id = -1;
+      printf("請選擇要出的卡片號碼 (0~79) [-1為結束出牌階段] : ");
       char ans_num[20];
-      if ( player[current_player_id_turn-1].AI ){
-        target_card_id = ai_use_card(current_player_id_turn, check_bang);
-        printf("%d\n", target_card_id);
-      }
-      else{
-        fgets(ans_num,20,stdin);
-        clean_fgets_buffer(ans_num);
-        target_card_id = atoi(ans_num);
-      }
+      fgets(ans_num,20,stdin);
+      clean_fgets_buffer(ans_num);
+      int target_card_id = atoi(ans_num);
       if( target_card_id == 0 && (ans_num[0] != '0') ){
         printf("%s不是合法的輸入\n",ans_num);
         sleep(1);
@@ -555,9 +565,6 @@ int main(void){
           continue;
         }
         check_for_done_use_card = bang(current_player_id_turn,target_card_id);
-        if( check_for_done_use_card == -2 ){
-          check_bang = -2;
-        }
         if( check_for_done_use_card == 1 ){
           check_bang = 1;
           drop_card(current_player_id_turn,target_card_id);
@@ -820,7 +827,6 @@ void Black_Jack(int current_player_id_turn){
       printf("是否要用角色能力 :在抽牌階段，可以選擇亮出抽出的第二張牌(%3d. %s)，若該牌是紅心或方塊，可以再多抽一張牌 ( y | n ) :", ability, card[ability].name);
       char ans[20];
       fgets(ans,20,stdin);
-      clean_fgets_buffer(ans);
       if(ans[0] == 'y'){
         system("clear");
         char tmp[20];
@@ -828,7 +834,6 @@ void Black_Jack(int current_player_id_turn){
         clear_stdin();
         printf("以上是第二張手牌, 待所有玩家看到後, 按任意鍵結束顯示：");
         fgets(tmp,20,stdin);
-        clean_fgets_buffer(tmp);
         while(1){
           int draw_card_num = rand() % 80;
           if( draw_card[draw_card_num] == 0 ){
@@ -892,7 +897,6 @@ void Kit_Carlson(int current_player_id_turn){
   while(1){
     clear_stdin();
     fgets(ans,20,stdin);
-    clean_fgets_buffer(ans);
     target_card = atoi(ans);
     if(target_card != cardChoice[0] && target_card != cardChoice[1] && target_card != cardChoice[2] ){
       printf("您輸入的編號並非抽出的牌之一 請重新輸入要放回牌堆的牌的編號：");
@@ -1066,23 +1070,43 @@ int bang(int current_player_id_turn, int target_card_id){
 
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
     char ans[20];
-    if(player[current_player_id_turn-1].AI == 1){ //AI
-      sleep(1);
-      printf("yes\n");
-      ans[0] = 'y';
-      sleep(1);
-    }
-    else{
-      clear_stdin();
-      fgets(ans,20,stdin);
-      clean_fgets_buffer(ans);
-    }
-
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
     if(ans[0] == 'n'){
       return 0;
     }
     else if( ans[0] == 'y' ) {
+      //choose player
+      while(1){
+        clear_stdin();
+        printf("選擇一名其他玩家(1~4) : ");
+        fgets(ans,20,stdin);
+        clean_fgets_buffer(ans);
+        target_player_id = atoi(ans);
+        if(target_player_id ==current_player_id_turn){
+          printf("您不能選擇自己 請重新選取\n");
+          sleep(1);
+          continue;
+        }
+        if(!(target_player_id>=1 && target_player_id<=4)){
+          printf("請重新輸入有效值\n");
+          sleep(1);
+          continue;
+        }
+        if( player[target_player_id-1].health < 1 ){
+          printf("目標玩家已死亡 請重新選取\n");
+          sleep(1);
+          continue;
+        }
+        break;
+      }
+      printf("player%d 向 player%d 使用了bang!\n",current_player_id_turn,target_player_id);
+      sleep(1);
+      //dis
+      dis = distance(player, current_player_id_turn, target_player_id); // 1 ~ 4
+
       //射程 range
       int range = 1;
       if(  player[current_player_id_turn-1].weapon == 74 \
@@ -1099,64 +1123,6 @@ int bang(int current_player_id_turn, int target_card_id){
       else if( player[current_player_id_turn-1].weapon == 79){
           range = 5;
       }
-
-      //choose player AI
-      if(player[current_player_id_turn-1].AI){
-        int invalid[4] = {0};
-        int k = 0;
-        for(int i = 0;i<4;i++){
-          dis = distance(player, current_player_id_turn, i+1); // 1 ~ 4
-          if(dis>range){
-            invalid[i] = 1;
-            continue;
-          }
-          if( current_player_id_turn == (i+1) ){
-            invalid[i] = 1;
-            continue;
-          }
-          if(player[i+1].health < 1){
-            invalid[i] = 1;
-            continue;
-          }
-          k++;
-        }
-        if(k<1){
-          return -2;
-        }else{
-          target_player_id = ai_attack_target(invalid,current_player_id_turn);
-        }
-      }
-      else{
-        //choose player
-        while(1){ //not AI
-          printf("選擇一名其他玩家(1~4) : ");
-          clear_stdin();
-          fgets(ans,20,stdin);
-          clean_fgets_buffer(ans);
-          target_player_id = atoi(ans);
-          if(target_player_id ==current_player_id_turn){
-            printf("您不能選擇自己 請重新選取\n");
-            sleep(1);
-            continue;
-          }
-          if(!(target_player_id>=1 && target_player_id<=4)){
-            printf("請重新輸入有效值\n");
-            sleep(1);
-            continue;
-          }
-          if( player[target_player_id-1].health < 1 ){
-            printf("目標玩家已死亡 請重新選取\n");
-            sleep(1);
-            continue;
-          }
-          break;
-        }
-      }
-
-      printf("player%d 向 player%d 使用了bang!\n",current_player_id_turn,target_player_id);
-      sleep(1);
-      //dis
-      dis = distance(player, current_player_id_turn, target_player_id); // 1 ~ 4
 
       if(dis > range){ // bug?
         printf("此名玩家在射程範圍之外 將返回出牌階段\n");
@@ -2670,9 +2636,14 @@ int Barrel(int current_player_id_turn, int target_card_id){
   int target_player_id;
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
-    clear_stdin();
     char ans[20];
-    fgets(ans,20,stdin);
+    clear_stdin();
+    if(player[current_player_id_turn-1].AI != 1){
+      fgets(ans,20,stdin);
+     }
+    else if(player[current_player_id_turn-1].AI == 1){
+      ans[0] == 'y';
+    }
     clean_fgets_buffer(ans);
     if (ans[0] == 'n'){
       return 0;
@@ -2683,13 +2654,20 @@ int Barrel(int current_player_id_turn, int target_card_id){
           printf("目前已經裝備一張同類型裝備卡%3d. %s ",player[current_player_id_turn-1].barrel, card[player[current_player_id_turn-1].barrel].name);
           printf("是否要棄掉此卡並裝備 %3d. %s( y | n ): ",target_card_id, card[target_card_id].name) ;
           clear_stdin();
-          fgets(ans,20,stdin);
+          if(player[current_player_id_turn-1].AI != 1){
+            fgets(ans,20,stdin);
+          }
+          else if(player[current_player_id_turn-1].AI == 1){
+            ans[0] == 'y';
+          }
           clean_fgets_buffer(ans);
           if (ans[0] == 'n'){
             return 0;
           }
           else if(ans[0] == 'y'){
-            drop_card(current_player_id_turn, player[current_player_id_turn-1].barrel);
+            fold_card[fold_card_flag] = player[current_player_id_turn-1].barrel;
+            fold_card_flag++;
+            break;
           }
         }
       }
@@ -2709,9 +2687,14 @@ int Scope(int current_player_id_turn, int target_card_id){
   int target_player_id;
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
-    clear_stdin();
     char ans[20];
-    fgets(ans,20,stdin);
+    clear_stdin();
+    if(player[current_player_id_turn-1].AI != 1){
+      fgets(ans,20,stdin);
+     }
+    else if(player[current_player_id_turn-1].AI == 1){
+      ans[0] == 'y';
+    }
     clean_fgets_buffer(ans);
     if (ans[0] == 'n'){
       return 0;
@@ -2722,13 +2705,20 @@ int Scope(int current_player_id_turn, int target_card_id){
           printf("目前已經裝備一張同類型裝備卡%3d. %s ",player[current_player_id_turn-1].scope, card[player[current_player_id_turn-1].scope].name);
           printf("是否要棄掉此卡並裝備%3d. %s( y | n ): ",target_card_id, card[target_card_id].name) ;
           clear_stdin();
-          fgets(ans,20,stdin);
+          if(player[current_player_id_turn-1].AI != 1){
+            fgets(ans,20,stdin);
+          }
+          else if(player[current_player_id_turn-1].AI == 1){
+            ans[0] == 'y';
+          }
           clean_fgets_buffer(ans);
           if (ans[0] == 'n'){
             return 0;
           }
           else if(ans[0] == 'y'){
-            drop_card(current_player_id_turn, player[current_player_id_turn-1].scope);
+            fold_card[fold_card_flag] = player[current_player_id_turn-1].scope;
+            fold_card_flag++;
+            break;
           }
         }
       }
@@ -2748,9 +2738,14 @@ int Horse(int current_player_id_turn, int target_card_id){
   int target_player_id;
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
-    clear_stdin();
     char ans[20];
-    fgets(ans,20,stdin);
+    clear_stdin();
+    if(player[current_player_id_turn-1].AI != 1){
+      fgets(ans,20,stdin);
+     }
+    else if(player[current_player_id_turn-1].AI == 1){
+      ans[0] == 'y';
+    }
     clean_fgets_buffer(ans);
     if (ans[0] == 'n'){
       return 0;
@@ -2761,13 +2756,20 @@ int Horse(int current_player_id_turn, int target_card_id){
           printf("目前已經裝備一張同類型裝備卡%3d. %s ",player[current_player_id_turn-1].horse, card[player[current_player_id_turn-1].horse].name);
           printf("是否要棄掉此卡並裝備%3d. %s( y | n ): ",target_card_id, card[target_card_id].name) ;
           clear_stdin();
-          fgets(ans,20,stdin);
+          if(player[current_player_id_turn-1].AI != 1){
+            fgets(ans,20,stdin);
+          }
+          else if(player[current_player_id_turn-1].AI == 1){
+            ans[0] == 'y';
+          }
           clean_fgets_buffer(ans);
           if (ans[0] == 'n'){
             return 0;
           }
           else if(ans[0] == 'y'){
-            drop_card(current_player_id_turn, player[current_player_id_turn-1].horse);
+            fold_card[fold_card_flag] = player[current_player_id_turn-1].horse;
+            fold_card_flag++;
+            break;
           }
         }
       }
@@ -2798,8 +2800,14 @@ int Jail(int current_player_id_turn, int target_card_id){
       while(1){
         clear_stdin();
         printf("選擇一名其他玩家(1~4) : ");
-        fgets(ans,20,stdin);
-        clean_fgets_buffer(ans);
+
+        if(player[current_player_id_turn-1].AI != 1){
+          fgets(ans,20,stdin);
+        }
+         else{
+          ans[0] == 'y';
+        }
+
         int target_player_id = atoi(ans);
         if(target_player_id == current_player_id_turn){
           printf("您不能選擇自己 請重新選取\n");
@@ -2836,12 +2844,18 @@ int Jail(int current_player_id_turn, int target_card_id){
 
 int Dynamite(int current_player_id_turn, int target_card_id){
   int target_player_id;
+  
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
     clear_stdin();
     char ans[20];
-    fgets(ans,20,stdin);
-    clean_fgets_buffer(ans);
+    if(player[current_player_id_turn-1].AI != 1){
+      fgets(ans,20,stdin);
+      clean_fgets_buffer(ans);
+    }
+    else{
+      ans[0] == 'y';
+    }
     if (ans[0] == 'n'){
       return 0;
     }
@@ -2851,13 +2865,19 @@ int Dynamite(int current_player_id_turn, int target_card_id){
           printf("目前已經裝備一張同類型裝備卡%3d. %s ",player[current_player_id_turn-1].dynamite, card[player[current_player_id_turn-1].dynamite].name);
           printf("是否要棄掉此卡並裝備%3d. %s( y | n ): ",target_card_id, card[target_card_id].name) ;
           clear_stdin();
-          fgets(ans,20,stdin);
+          if(player[current_player_id_turn-1].AI != 1){
+            fgets(ans,20,stdin);
+          }
+          else{
+            ans[0] == 'y';
+          }
           clean_fgets_buffer(ans);
           if (ans[0] == 'n'){
             return 0;
           }
           else if(ans[0] == 'y'){
-            drop_card(current_player_id_turn, player[current_player_id_turn-1].dynamite);
+            fold_card[fold_card_flag] = player[current_player_id_turn-1].dynamite ;
+            fold_card_flag++;
             break;
           }
         }
@@ -2871,7 +2891,7 @@ int Dynamite(int current_player_id_turn, int target_card_id){
     }
     return 1;
   }
-  return 0;
+	return 0;
 }
 
 int Weapon(int current_player_id_turn, int target_card_id){
@@ -2880,7 +2900,12 @@ int Weapon(int current_player_id_turn, int target_card_id){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
     clear_stdin();
     char ans[20];
-    fgets(ans,20,stdin);
+    if(player[current_player_id_turn-1].AI != 1){
+      fgets(ans,20,stdin);
+    }
+    else{
+      ans[0] == 'y';
+    }
     clean_fgets_buffer(ans);
     if (ans[0] == 'n'){
       return 0;
@@ -2891,7 +2916,12 @@ int Weapon(int current_player_id_turn, int target_card_id){
           printf("目前已經裝備一張同類型裝備卡%3d. %s ",player[current_player_id_turn-1].weapon, card[player[current_player_id_turn-1].weapon].name);
           printf("是否要棄掉此卡並裝備%3d. %s( y | n ): ",target_card_id, card[target_card_id].name) ;
           clear_stdin();
-          fgets(ans,20,stdin);
+          if(player[current_player_id_turn-1].AI != 1){
+            fgets(ans,20,stdin);
+          }
+          else if(player[current_player_id_turn-1].AI == 1){
+            ans[0] == 'y';
+          }
           clean_fgets_buffer(ans);
           if (ans[0] == 'n'){
             return 0;
@@ -2913,180 +2943,4 @@ int Weapon(int current_player_id_turn, int target_card_id){
     return 1;
   }
   return 0;
-}
-
-int weapon_range(int weapon_id){
-  if ( weapon_id >= 74 && weapon_id <= 76 ){
-    return 2;
-  }
-  if ( weapon_id >= 77 && weapon_id <= 79 ){
-    return weapon_id - 74;
-  }
-  return 0;
-}
-
-int ai_use_card(int current_player_id_turn, int check_bang){ 
-  //紀錄警長ID 存活數
-  int sheriff = 0; //1-4
-  int alive = 0;
-  for ( int i=0; i<4; i++ ){
-    if ( player[i].position == 1 ){
-      sheriff = i+1;
-    }
-    if ( player[i].health > 0 ){
-      alive ++;
-    }
-  }
-  //血量上限
-  int health_limit = career[player[current_player_id_turn-1].career].health;
-  if (player[current_player_id_turn-1].position == 1){
-    health_limit ++;
-  }
-  //bang數量
-  int bang_count = 0;
-  for ( int i=0; i<=24; i++ ){
-    if ( player[current_player_id_turn-1].hand[i] ){
-      bang_count ++;
-    }
-  }
-  //missed數量
-  int missed_count = 0;
-  for ( int i=25; i<=36; i++ ){
-    if ( player[current_player_id_turn-1].hand[i] ){
-      missed_count ++;
-    }
-  }
-
-  //回血(啤酒)
-  if ( player[current_player_id_turn-1].health < health_limit ){
-    for ( int i=53; i<=58; i++ ){
-      if ( player[current_player_id_turn-1].hand[i] ){
-        return i;
-      }
-    }
-  }
-  //回血(全員), 對他人有利, 快死才用
-  if ( player[current_player_id_turn-1].hand[59] ){
-    if ( player[current_player_id_turn-1].health <= 1 ){
-      return 59;
-    }
-  }
-  //警長 降低他人攻擊力: 印地安
-  if ( player[current_player_id_turn-1].position == 1 ){
-    if ( player[current_player_id_turn-1].hand[38] ){
-      return 38;
-    }
-    if ( player[current_player_id_turn-1].hand[39] ){
-      return 39;
-    }
-  }
-  //警長 降低他人攻擊力: 監獄
-  /*
-  if ( player[current_player_id_turn-1].position == 1 ){
-    for ( int i=68; i<=70; i++ ){
-      if ( player[current_player_id_turn-1].hand[i] ){
-        return i;
-      }
-    }
-  }
-  */
-  //啤酒桶
-  if ( player[current_player_id_turn-1].hand[63] && player[current_player_id_turn-1].weapon != 64){ 
-    return 63;
-  }
-  if ( player[current_player_id_turn-1].hand[64] && player[current_player_id_turn-1].weapon != 63){ 
-    return 64;
-  }
-  //武器升級: 連發
-  if ( player[current_player_id_turn-1].hand[72] && player[current_player_id_turn-1].weapon != 73){ 
-    return 72;
-  }
-  if ( player[current_player_id_turn-1].hand[73] && player[current_player_id_turn-1].weapon != 72){ 
-    return 73;
-  }
-  //武器升級: 提升射程74-49
-  int current_range = weapon_range( player[current_player_id_turn-1].weapon );
-  for ( int i=79; i>=74; i-- ){
-    if ( player[current_player_id_turn-1].hand[i] ){
-      if ( weapon_range(i) > current_range ){
-        return i;
-      }
-    }
-  }
-  //裝備升級: 瞄準鏡
-  if ( player[current_player_id_turn-1].hand[65] ){
-    return 65;
-  }
-  //裝備升級: 馬匹: 與警長距離為2的歹徒選67 其餘66
-  if ( player[current_player_id_turn-1].position == 3 && abs( current_player_id_turn - sheriff ) >= 2 ){
-    if ( player[current_player_id_turn-1].hand[67] ){
-      return 67;
-    }
-    if ( player[current_player_id_turn-1].hand[66] ){
-      return 66;
-    }
-  }
-  else{
-    if ( player[current_player_id_turn-1].hand[66] ){
-      return 66;
-    }
-    if ( player[current_player_id_turn-1].hand[67] ){
-      return 67;
-    }
-  }
-  //增加手牌 
-  if ( ( health_limit - player[current_player_id_turn-1].card_amount ) >= 3 && player[current_player_id_turn-1].hand[50] ){
-    return 50;
-  }
-  if ( ( health_limit - player[current_player_id_turn-1].card_amount ) >= 2 ){
-    if ( player[current_player_id_turn-1].hand[48] ){
-      return 48;
-    }
-    if ( player[current_player_id_turn-1].hand[49] ){
-      return 49;
-    }
-  }
-  //增加手牌(雜貨店): 對他人有利, 快沒牌才用
-  if ( player[current_player_id_turn-1].card_amount <= 2){
-    if ( player[current_player_id_turn-1].hand[51] ){
-      return 48;
-    }
-    if ( player[current_player_id_turn-1].hand[52] ){
-      return 52;
-    }
-  }
-  //確保狀態後 以下是攻擊型
-  //警長攻擊時 優先用加特林
-  if ( player[current_player_id_turn-1].position == 1 && player[current_player_id_turn-1].hand[37] ){
-    return 37;
-  }
-  //bang: calamity janet沒missed時會保留1張bang
-  if ( !( player[current_player_id_turn-1].career == 2 && missed_count == 0 && bang_count <= 1 ) && check_bang != -2 ){
-    for ( int i=0; i<=24; i++ ){
-      if ( player[current_player_id_turn-1].hand[i] ){
-        return i;
-      }
-    }
-  }
-  //決鬥: 手上bang >= 2
-  if ( bang_count >= 2 ){
-    for ( int i=60; i<=62; i++ ){
-      if ( player[current_player_id_turn-1].hand[i] ){
-        return i;
-      }
-    }
-  }
-  //指定放棄 驚慌 > cat
-  for ( int i=40; i<=47; i++ ){
-    if ( player[current_player_id_turn-1].hand[i] ){
-      return i;
-    }
-  }
-  //炸彈
-  /*
-  if ( alive >= 3 && player[current_player_id_turn-1].hand[71] ){
-    return 71;
-  }
-  */
-  return -1;
 }
