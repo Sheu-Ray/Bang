@@ -25,7 +25,6 @@ void initialization(); //init.c card and career
 void clear_stdin();
 void clean_fgets_buffer(char temp[]);
 int get_winner(struct Player player[4]);
-int ai_attack_target(int invalid[4], int ai_id); //ai_id & retrun value: 1-4
 void Black_Jack(int current_player_id_turn);
 void Pedro_Ramirez(int current_player_id_turn);
 void Kit_Carlson(int current_player_id_turn);
@@ -126,7 +125,7 @@ int main(void){
     player[i].health = career[ player[i].career ].health;
     if( player[i].position == 1 ) player[i].health++;
   }
-
+  
   //隨機抽卡
   for( int i = 0 ;i < 4 ; i++){
     for( int j = 0 ;j < player[i].health ; j++){ //張數
@@ -146,17 +145,168 @@ int main(void){
   while( !(end_game) ){
     system("clear");
     print_allPlayers(player,current_player_id_turn);
-    if(player[current_player_id_turn-1].AI == 0){ //AI
-      print_hand(player[current_player_id_turn-1]);
-    }
-    else{
-      printf("電腦將開始自動操作\n");
-      sleep(1);
-    }
+    print_hand(player[current_player_id_turn-1]);
 
     // only for test
     // player[current_player_id_turn-1].career = 4;
     // only for test
+
+    //dynamite判定
+    if(player[current_player_id_turn-1].dynamite != -1){
+       printf("Player%d 裝備了dynamite（炸彈）進行抽牌判定是否爆炸\n", current_player_id_turn);
+       sleep(2);
+      check_draw_card();
+      int for_miss_card_num = -1;
+      if(draw_card_top != -1){
+        draw_card[draw_card_top] = 1;
+        for_miss_card_num = draw_card_top;
+        draw_card_top = -1;
+      }
+      else{
+        while(1){
+          int draw_card_num = rand() % 80;
+          if( draw_card[draw_card_num] == 0 ){
+            draw_card[draw_card_num] = 1;
+            for_miss_card_num = draw_card_num;
+            break;
+          }
+        }
+      } 
+      if(card[for_miss_card_num].suit == 0 && (card[for_miss_card_num].rank >= 1 && card[for_miss_card_num].rank  <= 8)){ //判定失敗
+        if( player[current_player_id_turn-1].career == 7){  //lucky duke
+          int for_miss_card_num2 = 0;
+          printf("使用Lucky_Duke能力 抽兩張卡 並選其一作為判定卡\n");
+          sleep(1);
+          //抽牌檢定
+          check_draw_card();
+          if(draw_card_top != -1){
+            draw_card[draw_card_top] = 1;
+            for_miss_card_num2 = draw_card_top;
+            draw_card_top = -1;
+          }
+          else{
+            while(1){
+              int draw_card_num = rand() % 80;
+              if( draw_card[draw_card_num] == 0 ){
+              draw_card[draw_card_num] = 1;
+              for_miss_card_num2 = draw_card_num;
+              break;
+              }
+            }
+          }
+          if(card[for_miss_card_num2].suit == 0 && (card[for_miss_card_num2].rank >= 1 && card[for_miss_card_num2].rank  <= 8)){
+            printf("Player%d 判定失敗 損失3點血量\n", current_player_id_turn);
+            player[current_player_id_turn-1].health -= 3;
+            sleep(1);
+          }
+          fold_card[fold_card_flag] = for_miss_card_num2;
+          fold_card_flag ++;
+        }
+        else{
+          printf("Player%d 判定失敗 損失3點血量\n", current_player_id_turn);
+          player[current_player_id_turn-1].health -= 3;
+          sleep(1);
+        }
+      }
+      else{
+        int next_player_id = left(current_player_id_turn);
+        while(player[next_player_id-1].health < 1){
+          next_player_id = left(current_player_id_turn);
+        }
+        printf("Player%d 判定成功 未損失血量 將dynamite傳遞至下一位玩家 player%d\n", current_player_id_turn,next_player_id);
+        sleep(1);
+        player[next_player_id-1].dynamite = player[current_player_id_turn-1].dynamite;
+        player[current_player_id_turn-1].dynamite = -1;
+      }
+      fold_card[fold_card_flag] = for_miss_card_num;
+      fold_card_flag ++;
+    }
+    auto_beer();
+    end_game = check_end_game();
+    if(end_game == 1) break;
+
+    //jail判定
+    int jail_skip_turn = -1;
+    if(player[current_player_id_turn-1].jail != -1){
+      printf("Player%d 裝備了jail（監獄）進行抽牌判定是否跳過回合\n", current_player_id_turn);
+      sleep(2);
+      check_draw_card();
+      int for_miss_card_num = -1;
+      if(draw_card_top != -1){
+        draw_card[draw_card_top] = 1;
+        for_miss_card_num = draw_card_top;
+        draw_card_top = -1;
+      }
+      else{
+        while(1){
+          int draw_card_num = rand() % 80;
+          if( draw_card[draw_card_num] == 0 ){
+            draw_card[draw_card_num] = 1;
+            for_miss_card_num = draw_card_num;
+            break;
+          }
+        }
+      } 
+      if(card[for_miss_card_num].suit != 1){ //判定失敗
+        if( player[current_player_id_turn-1].career == 7){  //lucky duke
+          int for_miss_card_num2 = 0;
+          printf("使用Lucky_Duke能力 抽兩張卡 並選其一作為判定卡\n");
+          sleep(1);
+          //抽牌檢定
+          check_draw_card();
+          if(draw_card_top != -1){
+            draw_card[draw_card_top] = 1;
+            for_miss_card_num2 = draw_card_top;
+            draw_card_top = -1;
+          }
+          else{
+            while(1){
+              int draw_card_num = rand() % 80;
+              if( draw_card[draw_card_num] == 0 ){
+              draw_card[draw_card_num] = 1;
+              for_miss_card_num2 = draw_card_num;
+              break;
+              }
+            }
+          }
+          if(card[for_miss_card_num2].suit != 1 ){
+            printf("Player%d 判定失敗 即將跳過此回合 \n", current_player_id_turn);
+            sleep(1);
+            jail_skip_turn = 1;
+          }
+          fold_card[fold_card_flag] = for_miss_card_num2;
+          fold_card_flag ++;
+        }
+        else{
+          printf("Player%d 判定失敗 即將跳過此回合\n", current_player_id_turn);
+          sleep(1);
+          jail_skip_turn = 1;
+        }
+      }
+      else{
+        int next_player_id = left(current_player_id_turn);
+        while(player[next_player_id-1].health < 1){
+          next_player_id = left(current_player_id_turn);
+        }
+        printf("Player%d 判定成功 繼續此回合\n", current_player_id_turn);
+        sleep(1);
+      }
+      player[current_player_id_turn-1].jail = -1;
+      fold_card[fold_card_flag] = for_miss_card_num;
+      fold_card_flag ++;
+    }
+    if(jail_skip_turn == 1){
+      system("clear");
+      print_allPlayers(player,current_player_id_turn);
+      printf("你的回合已經結束 3秒後將進入下一位玩家的回合\n");
+      sleep(3);
+      current_player_id_turn = (current_player_id_turn) % 4 + 1;  //1~4
+      while(player[current_player_id_turn-1].health <1 ){
+      current_player_id_turn = (current_player_id_turn) % 4 + 1;  //1~4
+      }
+      continue;
+    } 
+
 
     int normal = 1;
     
@@ -165,57 +315,26 @@ int main(void){
     	normal = 0;
     	printf("將開始進行本回合的抽卡\n");
     	sleep(2);
+      check_draw_card();
     	Black_Jack(current_player_id_turn);
     }
     //Jesse Jones	
     else if( player[current_player_id_turn-1].career == 4 ){
       while(1){
 
-        //clear_stdin();
-        char ans[20];
+        clear_stdin();
+
         printf("是否要用角色能力 : 從其他玩家的手牌中抽取第一張卡 ( y | n ) : ");
-        if(player[current_player_id_turn-1].AI == 1){ //AI
-          sleep(1);
-          printf("yes\n");
-          ans[0] = 'y';
-          sleep(1);
-        }
-        else{
-          clear_stdin();
-          fgets(ans,20,stdin);
-          clean_fgets_buffer(ans);
-        }
+        char ans[20];
+        fgets(ans,20,stdin);
         if(ans[0] == 'y'){
           //fix bug 如果所有其他玩家都沒有手牌
           normal = 0;
           while(1){
-            //clear_stdin();
-            int target_player_id = -1;
+            clear_stdin();
             printf("選擇一名其他玩家(1~4) : ");
-            if(player[current_player_id_turn-1].AI == 1){ //AI
-              //if( player[current_player_id_turn-1].position == 1 ){
-                while(1){
-                  target_player_id = rand() % 4 + 1;
-                  if(target_player_id == current_player_id_turn){
-                    continue;
-                  }
-                  if(player[target_player_id-1].card_amount < 1){
-                    continue;
-                  }
-                  break;
-                }
-              //}
-              sleep(1);
-              printf("%d\n",target_player_id);
-              sleep(1);
-            }
-            else{
-              clear_stdin();
-              fgets(ans,20,stdin);
-              target_player_id = atoi(ans);
-              clean_fgets_buffer(ans);
-            }
-
+            fgets(ans,20,stdin);
+            int target_player_id = atoi(ans);
             if(target_player_id ==current_player_id_turn){
               printf("您不能選擇自己 請重新選取\n");
               sleep(1);
@@ -267,22 +386,21 @@ int main(void){
     	normal = 0;
     	printf("將開始進行本回合的抽卡\n");
     	sleep(2);
+      check_draw_card();
     	Kit_Carlson(current_player_id_turn);
     }
     //Pedro Ramirez
     else if( player[current_player_id_turn-1].career == 9 ){ 
       if (fold_card_flag > 0){
         while (1){
+          clear_stdin();
           char ans[20];
-          printf("是否要使用角色能力 : 從棄牌堆中抽取第一張卡 ( y | n ) : ");
           if (player[current_player_id_turn-1].AI == 1){
             ans[0] == 'y';
-            printf("y\n");
           }
           else{
-            clear_stdin();
+            printf("是否要使用角色能力 : 從棄牌堆中抽取第一張卡 ( y | n ) : ");
             fgets(ans, 20, stdin);
-            clean_fgets_buffer(ans);
           }
           if (ans[0] == 'y'){
     	      normal = 0;
@@ -296,6 +414,7 @@ int main(void){
       }
     }
 
+
     if( normal ){ //normal
       printf("將開始進行本回合的抽卡\n");
       sleep(2);
@@ -304,15 +423,9 @@ int main(void){
 
       system("clear");
       print_allPlayers(player,current_player_id_turn);
-      if(player[current_player_id_turn-1].AI == 0){ //AI
-        printf("\n本回合的抽卡已完成 持有手牌如下");
-        print_hand(player[current_player_id_turn-1]);
-        sleep(2);
-      }
-      else{
-        printf("本回合的抽卡已經完成\n");
-        sleep(1);
-      }
+      printf("\n本回合的抽卡已完成 持有手牌如下");
+      print_hand(player[current_player_id_turn-1]);
+      sleep(2);
     }
 
     //出牌階段
@@ -327,19 +440,12 @@ int main(void){
       //};
       //scanf("%*[^<]%*c");
       // clear stdin
+      if(end_game == 1) break;
       clear_stdin();
       system("clear");
       print_allPlayers(player,current_player_id_turn);
-
-      if(player[current_player_id_turn-1].AI == 0){ //AI
-        printf("\n持有手牌如下");
-        print_hand(player[current_player_id_turn-1]);
-
-      }
-      else{
-        printf("player%d 自動操作中\n",current_player_id_turn);
-        sleep(1);
-      }
+      printf("\n持有手牌如下");
+      print_hand(player[current_player_id_turn-1]);
 
       printf("請選擇要出的卡片號碼 (0~79) [-1為結束出牌階段] : ");
       char ans_num[20];
@@ -445,7 +551,7 @@ int main(void){
           }
         }
         if (target_count <= 0){
-          printf("並沒有與您距離為1的玩家\n");
+          printf("no player is 1 away from you\n");
           sleep(1);
           continue;
         }
@@ -497,7 +603,6 @@ int main(void){
       else if (target_card_id >= 72 && target_card_id <= 79){ // 72-79 Weapon
         check_for_done_use_card = Weapon(current_player_id_turn, target_card_id);
       }
-      
       // 檢查死亡 beer 自動回血;
       auto_beer();
       Vulture_Sam(); //接收卡牌
@@ -509,28 +614,6 @@ int main(void){
     while(player[current_player_id_turn-1].card_amount > player[current_player_id_turn-1].health){
       system("clear");
       print_allPlayers(player,current_player_id_turn);
-
-      if(player[current_player_id_turn-1].AI == 1){ //AI
-        printf("player%d 自動操作中\n",current_player_id_turn);
-        printf("你的手牌數量大於生命 進入棄牌階段\n");
-        printf("你還需要棄掉 %d 張卡片\n",player[current_player_id_turn-1].card_amount - player[current_player_id_turn-1].health);
-        sleep(1);
-        printf("請選擇要棄掉的卡牌號碼 : ");
-        int target_card_id = -1;
-        while(1){
-          target_card_id = rand() % 80;
-          if(player[current_player_id_turn-1].hand[target_card_id] == 0){
-            continue;
-          }
-          break;
-        }
-        printf("%d\n",target_card_id);
-        sleep(1);
-
-        drop_card(current_player_id_turn,target_card_id);
-        break;
-      }
-
       printf("\n持有手牌如下");
       print_hand(player[current_player_id_turn-1]);
       printf("你的手牌數量大於生命 進入棄牌階段\n");
@@ -792,100 +875,6 @@ void drop_card(int current_player_id_turn,int target_card_id){
   fold_card[fold_card_flag] = target_card_id;
   fold_card_flag ++;
 }
-//ai_id & return value: 1-4   //NEVER return ai_id and dead player's ID
-//invalid[i]=1 means playeri+1 is invalid target for ai_id because of distance or other rulls
-int ai_attack_target(int invalid[4], int ai_id){
-  int sheriff = 0, outlaw1 = 0, outlaw2 = 0, renegade = 0; //player id 1-4
-  int attack_rank[3] = {0}; //put target id
-
-  //get all position's player index
-  for (int i=1; i<=4; i++){
-    if (player[i-1].position == 1){
-      sheriff = i;
-    }
-    if (player[i-1].position == 3){
-      if (outlaw1 == 0){
-        outlaw1 = i;
-      }
-      else{
-        outlaw2 = i;
-      }
-    }
-    if (player[i-1].position == 4){
-      renegade = i;
-    }
-  }
-  //dead player : invlid = 1
-  for (int i=1; i<=4; i++){
-    if (player[i-1].health <= 0){
-      invalid[i-1] = 1;
-    }
-  }
-  //rank other players base on position
-  if (ai_id == sheriff){ //shreiff: health low >> health high
-    int tmp;
-    attack_rank[0] = outlaw1;
-    attack_rank[1] = outlaw2;
-    attack_rank[2] = renegade;
-    if ( player[attack_rank[0]-1].health > player[attack_rank[1]-1].health){
-      tmp = attack_rank[0];
-      attack_rank[0] = attack_rank[1];
-      attack_rank[1] = tmp;
-    }
-    if ( player[attack_rank[1]-1].health > player[attack_rank[2]-1].health){
-      tmp = attack_rank[1];
-      attack_rank[1] = attack_rank[2];
-      attack_rank[2] = tmp;
-    }
-    if ( player[attack_rank[0]-1].health > player[attack_rank[1]-1].health){
-      tmp = attack_rank[0];
-      attack_rank[0] = attack_rank[1];
-      attack_rank[1] = tmp;
-    }
-  }
-  if (ai_id == outlaw1 || ai_id == outlaw2){ //outlaw: sheriff > health high > health low
-    attack_rank[0] = sheriff;
-    if(ai_id == outlaw1){
-      if (player[outlaw2-1].health > player[renegade-1].health){
-        attack_rank[1] = outlaw2;
-        attack_rank[2] = renegade;
-      }
-      else{
-        attack_rank[1] = renegade;
-        attack_rank[2] = outlaw2;
-      }
-    }
-    else{
-      if (player[outlaw1-1].health > player[renegade-1].health){
-        attack_rank[1] = outlaw1;
-        attack_rank[2] = renegade;
-      }
-      else{
-        attack_rank[1] = renegade;
-        attack_rank[2] = outlaw1;
-      }
-    }
-  }
-  if (ai_id == renegade){ //renegade: health low outlaw > health high outlaw > sheriff
-    if (player[outlaw1-1].health < player[outlaw2-1].health){
-      attack_rank[0] = outlaw1;
-      attack_rank[1] = outlaw2;
-    }
-    else{
-      attack_rank[0] = outlaw2;
-      attack_rank[1] = outlaw1;
-    }
-    attack_rank[2] = sheriff;
-  }
-  //output target id base on rank
-  for (int i=0; i<3; i++){
-    if ( !invalid[attack_rank[i]-1] ){
-      return attack_rank[i];
-    }
-  }
-  return 0;
-}
-
 int bang(int current_player_id_turn, int target_card_id){
   int target_player_id;
   int dis;
@@ -1245,12 +1234,12 @@ int bang(int current_player_id_turn, int target_card_id){
 
         if(player[target_player_id-1].career == 0){  //Bart_Cassidy
           printf("對方為Bart_Cassidy 發動了角色能力[被傷害時將抽一張卡]\n");
-          sleep(2);
+          sleep(1);
           normal_draw_card(target_player_id);
         }
         else if(player[target_player_id-1].career == 3){  //El_Gringo
           printf("對方為El_Gringo 發動了角色能力[被傷害時可隨機從你手上抽一張卡]\n");
-          sleep(2);
+          sleep(1);
           if(player[current_player_id_turn-1].card_amount < 1){
             printf("你手上無卡牌可供對方抽取\n");
             return 1;
@@ -1279,24 +1268,17 @@ int beer(int current_player_id_turn, int target_card_id){
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
     clear_stdin();
-    char ans[20];
-    if (player[current_player_id_turn-1].AI){
-      printf("y\n");
-      ans[0] = 'y';
-    }
-    else{
-      clear_stdin();
+      char ans[20];
       fgets(ans,20,stdin);
       clean_fgets_buffer(ans);
-    }
-    if(ans[0] == 'n'){
-      return 0;
-    }
-    else if (ans[0] == 'y'){
-      player[current_player_id_turn-1].health ++;
-      printf("成功使用\n");
-      sleep(1);
-      return 1;
+      if(ans[0] == 'n'){
+        return 0;
+      }
+      else if (ans[0] == 'y'){
+        player[current_player_id_turn-1].health ++;
+        printf("成功使用\n");
+        sleep(1);
+        return 1;
     }
   }
   return 0;
@@ -1306,16 +1288,10 @@ int saloow(int current_player_id_turn, int target_card_id){
   int health_limit = 0;
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
     char ans[20];
-      if (player[current_player_id_turn-1].AI){
-        printf("y\n");
-        ans[0] = 'y';
-      }
-      else{
-        clear_stdin();
-        fgets(ans,20,stdin);
-        clean_fgets_buffer(ans);
-      }
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
       if(ans[0] == 'n'){
         return 0;
       }
@@ -1340,16 +1316,10 @@ int saloow(int current_player_id_turn, int target_card_id){
 int stagecoach(int current_player_id_turn, int target_card_id){
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
     char ans[20];
-    if (player[current_player_id_turn-1].AI){
-      printf("y\n");
-      ans[0] = 'y';
-    }
-    else{
-      clear_stdin();
-      fgets(ans,20,stdin);
-      clean_fgets_buffer(ans);
-    }
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
     if(ans[0] == 'n'){
       return 0;
     }else if (ans[0]=='y'){
@@ -1373,17 +1343,11 @@ int general_store(int current_player_id_turn, int target_card_id){
   int current_chooser_id = current_player_id_turn;
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
     char ans[20];
     char choose[20];
-    if (player[current_player_id_turn-1].AI){
-      ans[0] = 'y';
-      printf("y\n");
-    }
-    else{
-      clear_stdin();
-      fgets(ans,20,stdin);
-      clean_fgets_buffer(ans);
-    }
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
     if(ans[0] == 'n'){
       return 0;
     }else if (ans[0] == 'y'){
@@ -1398,7 +1362,6 @@ int general_store(int current_player_id_turn, int target_card_id){
       }
       // get cardChoice
       for (int i=0; i<alive_count; i++){
-        check_draw_card();
         if(draw_card_top != -1){
           draw_card[draw_card_top] = 1;
           cardChoice[i] = draw_card_top;
@@ -1425,21 +1388,10 @@ int general_store(int current_player_id_turn, int target_card_id){
         }
         while(1){ //get chosed card id
           printf("player%d, 請從以上卡牌中輸入要加入手牌的牌的編號 : ", current_chooser_id);
-          if (player[current_chooser_id-1].AI){
-            for (int c=0; c<4; c++){
-              if (cardChoice[c] >= 0){
-                choosed_card_id = cardChoice[c];
-                break;
-              }             
-            }
-            printf("%d\n", choosed_card_id);
-          }
-          else{
-            clear_stdin();
-            fgets(choose,20,stdin);
-            clean_fgets_buffer(choose);
-            choosed_card_id = atoi(choose);
-          }
+          clear_stdin();
+          fgets(choose,20,stdin);
+          clean_fgets_buffer(choose);
+          choosed_card_id = atoi(choose);
           choosed_card_index = -1;
           for (int j=0; j<4; j++){
             if (choosed_card_id == cardChoice[j]){
@@ -1477,37 +1429,19 @@ int panic(int current_player_id_turn, int target_card_id){
   int target_player_id;
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
     char ans[20];
-    if (player[current_player_id_turn-1].AI){
-      printf("y\n");
-      ans[0] = 'y';
-    }
-    else{
-      clear_stdin();
-      fgets(ans,20,stdin);
-      clean_fgets_buffer(ans);
-    }
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
     if(ans[0] == 'n'){
       return 0;
     }else if (ans[0]=='y'){
-      int invalid[4];
-      for (int i=0; i<4; i++){
-        if ( distance(player, current_player_id_turn, i+1) != 1){
-          invalid[i] = 1;
-        }
-      }
       while(1){
         printf("請選擇一名與您距離為1的玩家(1~4) : ");
-        if (player[current_player_id_turn-1].AI){
-          target_player_id = ai_attack_target(invalid, current_player_id_turn);
-          printf("%d\n", target_player_id);
-        }
-        else{
-          clear_stdin();
-          fgets(ans,20,stdin);
-          clean_fgets_buffer(ans);
-          target_player_id = atoi(ans);
-        }
+        clear_stdin();
+        fgets(ans,20,stdin);
+        clean_fgets_buffer(ans);
+        target_player_id = atoi(ans);
         //check input target_player_id
         if(target_player_id ==current_player_id_turn){
           printf("您不能選擇自己 請重新選取\n");
@@ -1572,22 +1506,9 @@ int panic(int current_player_id_turn, int target_card_id){
         int choosed_card_id;
         while(1){
           printf("請輸入想要的牌的號碼 : ");
-          if (player[current_player_id_turn-1].AI){ //better weapon > barrel > random
-            if (player[target_player_id-1].weapon > player[current_player_id_turn-1].weapon){
-              choosed_card_id = player[target_player_id-1].weapon;
-            }
-            else if (player[target_player_id-1].barrel > -1){
-              choosed_card_id = player[target_player_id-1].barrel;
-            }else{
-              choosed_card_id = 80;
-            }
-            printf("%d\n", choosed_card_id);
-          }
-          else{
-            clear_stdin();
-            fgets(ans,20,stdin);
-            choosed_card_id = atoi(ans);
-          }
+          clear_stdin();
+          fgets(ans,20,stdin);
+          choosed_card_id = atoi(ans);
           if (choosed_card_id < 0 || choosed_card_id > 80){
             printf("請重新輸入有效值\n");
             sleep(1);
@@ -1634,8 +1555,8 @@ int panic(int current_player_id_turn, int target_card_id){
         }
         printf("成功使用\n");
         sleep(1);
-        return 1;
       }
+      return 1;
     }
   }
   return 0;
@@ -1647,31 +1568,20 @@ int cat_balou(int current_player_id_turn, int target_card_id){
 
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
     char ans[20];
-    if (player[current_player_id_turn-1].AI){
-      ans[0] = 'y';
-      printf("y\n");
-    }
-    else{
-      clear_stdin();
-      fgets(ans,20,stdin);
-      clean_fgets_buffer(ans);
-    }
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
     if(ans[0] == 'n'){
       return 0;
     }else if (ans[0]=='y'){
       while(1){
-        //get target player ID 
+        //get target player ID
         printf("請選擇一名玩家(1~4) : ");
-        if (player[current_player_id_turn-1].AI){
-          int invalid[4] = {0};
-        } 
-        else{
-          clear_stdin();
-          fgets(ans,20,stdin);
-          clean_fgets_buffer(ans);
-          target_player_id = atoi(ans);
-        }
+        clear_stdin();
+        fgets(ans,20,stdin);
+        clean_fgets_buffer(ans);
+        target_player_id = atoi(ans);
         if ( target_player_id < 1 || target_player_id > 4 ){
           printf("請重新輸入有效值\n");
           sleep(1);
@@ -1736,31 +1646,10 @@ int cat_balou(int current_player_id_turn, int target_card_id){
       printf("Player%d，請從以上選擇一張牌放棄", target_player_id);
       int choosed_card_id;
       while(1){
-        if (player[target_player_id-1].AI){ //hand card > showed card
-          if (player[target_player_id-1].card_amount > 0){
-            for (int i=0; i<80; i++){
-              if (player[target_player_id-1].hand[i] > 0){
-                choosed_card_id = i;
-                break;
-              }
-            }
-          }else{
-            for (int i=0; i<80; i++){
-              if (target_player_card[0] > 0){
-                choosed_card_id = i;
-                break;
-              }
-            }
-          }
-          printf("%d\n", choosed_card_id);
-        }
-        else{
-          clear_stdin();
-          char ans[20];
-          fgets(ans,20,stdin);
-          clean_fgets_buffer(ans);
-          choosed_card_id = atoi(ans);
-        }
+        clear_stdin();
+        char ans[20];
+        fgets(ans,20,stdin);
+        clean_fgets_buffer(ans);
         choosed_card_id = atoi(ans);
         if ( choosed_card_id < 0 || choosed_card_id > 79 ){
           printf("請重新輸入有效值\n");
@@ -1800,8 +1689,9 @@ int cat_balou(int current_player_id_turn, int target_card_id){
       printf("\n成功使用\n");
       printf("現在請Player%d繼續出牌\n", current_player_id_turn);
       sleep(3);
-      return 1;
+      break;
     }
+    return 1;
   } 
   return 0;
 }
@@ -1809,16 +1699,10 @@ int cat_balou(int current_player_id_turn, int target_card_id){
 int indians(int current_player_id_turn, int target_card_id){
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
     char ans[20];
-    if (player[current_player_id_turn-1].AI){
-      ans[0] = 'y';
-      printf("y\n");
-    }
-    else{
-      clear_stdin();
-      fgets(ans,20,stdin);
-      clean_fgets_buffer(ans);
-    }
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
     if (ans[0] == 'n'){
       return 0;
     }else if(ans[0] == 'y'){
@@ -1832,23 +1716,9 @@ int indians(int current_player_id_turn, int target_card_id){
               break;
             }
           }
-          // calamityJanet(bang=missed)
-          if (bang_to_drop < 0 && player[i].career == 2){ 
-            for (int j=25; j<=36; j++){
-              if (player[i].hand[j] == 1){
-                bang_to_drop = j;
-                break;
-              }
-            }
-          }
           if (bang_to_drop >= 0){ //drop that bang
             drop_card(i+1, bang_to_drop);
-            if (bang_to_drop < 25){
-              printf("Player%d 丟出一張Bang\n", i+1);
-            }
-            else{
-              printf("Player%d 丟出一張Missed\n", i+1);
-            }
+            printf("Player%d 丟出一張Bang\n", i+1);
             sleep(1);
           }
           else{ //-1 health
@@ -1860,8 +1730,9 @@ int indians(int current_player_id_turn, int target_card_id){
       }
       printf("\n成功使用\n");
       sleep(3);
-      return 1;
+      break;
     }
+    return 1;
   }
   return 0;
 }
@@ -1870,33 +1741,20 @@ int duel(int current_player_id_turn, int target_card_id){
   int target_player_id;
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
     char ans[20];
-    if (player[current_player_id_turn-1].AI){
-      ans[0] = 'y';
-      printf("y\n");
-    }
-    else{
-      clear_stdin();
-      fgets(ans,20,stdin);
-      clean_fgets_buffer(ans);
-    }
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
     if (ans[0] == 'n'){
       return 0;
     }else if(ans[0] == 'y'){
       while(1){
         //get target player ID
         printf("請選擇一名玩家(1~4) :  ");
-        if (player[current_player_id_turn-1].AI){
-          int invalid[4] = {0};
-          target_player_id = ai_attack_target(invalid, current_player_id_turn);
-          printf("%d\n", target_player_id);
-        }
-        else{
-          clear_stdin();
-          fgets(ans,20,stdin);
-          clean_fgets_buffer(ans);
-          target_player_id = atoi(ans);
-        }
+        clear_stdin();
+        fgets(ans,20,stdin);
+        clean_fgets_buffer(ans);
+        target_player_id = atoi(ans);
         if ( target_player_id < 1 || target_player_id > 4 ){
           printf("請重新輸入有效值\n");
           sleep(1);
@@ -1914,9 +1772,9 @@ int duel(int current_player_id_turn, int target_card_id){
         }
         
         // get 2 player's bang IDs
-        int current_bang[37], target_bang[37];
+        int current_bang[25], target_bang[25];
         int current_bang_index = 0, target_bang_index = 0;
-        for (int i=0; i<37; i++){
+        for (int i=0; i<25; i++){
           current_bang[i] = -1;
           target_bang[i] = -1;
         }
@@ -1930,35 +1788,12 @@ int duel(int current_player_id_turn, int target_card_id){
             target_bang_index ++;
           }
         }
-        //calamity janet
-        if ( player[current_player_id_turn-1].career == 2 ){
-          for (int i=25; i<=36; i++){
-            if (player[current_player_id_turn-1].hand[i] == 1){
-              current_bang[current_bang_index] = i;
-              current_bang_index ++;
-            }
-          }
-        }
-        if ( player[target_player_id-1].career == 2 ){
-          for (int i=25; i<=36; i++){
-            if (player[target_player_id-1].hand[i] == 1){
-              target_bang[target_bang_index] = i;
-              target_bang_index ++;
-            }
-          }
-        }
-        
         // duel 
         printf("\n");
-        for (int i=0; i<37; i++){
+        for (int i=0; i<25; i++){
           //target_player's turn
           if (target_bang[i] >= 0){
-            if (target_bang[i] <= 25){
-              printf("Player%d 丟出一張Bang\n", target_player_id);
-            }
-            else{
-              printf("Player%d 丟出一張Missed\n", target_player_id);
-            }
+            printf("Player%d 丟出一張Bang\n", target_player_id);
             drop_card(target_player_id, target_bang[i]);
             sleep(1);
           }
@@ -1970,12 +1805,7 @@ int duel(int current_player_id_turn, int target_card_id){
           }
           //current_player's turn
           if (current_bang[i] >= 0){
-            if (current_bang[i] < 25){
-              printf("Player%d 丟出一張Bang\n", current_player_id_turn);
-            }
-            else{
-              printf("Player%d 丟出一張Missed\n", current_player_id_turn);
-            }
+            printf("Player%d 丟出一張Bang\n", current_player_id_turn);
             drop_card(current_player_id_turn, current_bang[i]);
             sleep(1);
           }
@@ -1990,8 +1820,9 @@ int duel(int current_player_id_turn, int target_card_id){
       }
       printf("\n成功使用\n");
       sleep(3);
-      return 1;
+      break;
     }
+    return 1;
   }
   return 0;
 }
@@ -2000,16 +1831,10 @@ int gatling(int current_player_id_turn, int target_card_id){
   int target_player_id;
   while(1){
     printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
     char ans[20];
-    if (player[current_player_id_turn-1].AI){
-      ans[0] = 'y';
-      printf("y\n");
-    }
-    else{
-      clear_stdin();
-      fgets(ans,20,stdin);
-      clean_fgets_buffer(ans);
-    }
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
     if (ans[0] == 'n'){
       return 0;
     }
@@ -2023,7 +1848,7 @@ int gatling(int current_player_id_turn, int target_card_id){
       
       printf("\n成功使用\n");
       sleep(3);
-      return 1;
+      break;
     }
   }
 	return 0;
@@ -2424,6 +2249,7 @@ int Barrel(int current_player_id_turn, int target_card_id){
           }
           else if(ans[0] == 'y'){
             drop_card(current_player_id_turn, player[current_player_id_turn-1].barrel);
+            break;
           }
         }
       }
@@ -2463,6 +2289,7 @@ int Scope(int current_player_id_turn, int target_card_id){
           }
           else if(ans[0] == 'y'){
             drop_card(current_player_id_turn, player[current_player_id_turn-1].scope);
+            break;
           }
         }
       }
@@ -2502,6 +2329,7 @@ int Horse(int current_player_id_turn, int target_card_id){
           }
           else if(ans[0] == 'y'){
             drop_card(current_player_id_turn, player[current_player_id_turn-1].horse);
+            break;
           }
         }
       }
@@ -2518,13 +2346,93 @@ int Horse(int current_player_id_turn, int target_card_id){
 }
 
 int Jail(int current_player_id_turn, int target_card_id){
-
-return 0;
+  int target_player_id;
+  while(1){
+    printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
+    char ans[20];
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
+    if (ans[0] == 'n'){
+      return 0;
+    }
+    else if(ans[0] == 'y'){
+      while(1){
+        clear_stdin();
+        printf("選擇一名其他玩家(1~4) : ");
+        fgets(ans,20,stdin);
+        int target_player_id = atoi(ans);
+        if(target_player_id == current_player_id_turn){
+          printf("您不能選擇自己 請重新選取\n");
+          sleep(1);
+          continue;
+        }
+        if(!(target_player_id>=1 && target_player_id<=4)){
+          printf("請重新輸入有效值\n");
+          sleep(1);
+          continue;
+        }
+        if(player[target_player_id-1].jail != -1){
+          printf("您不能選擇該玩家, 該玩家已經裝備Jail\n");
+          sleep(1);
+          return 0;
+        }
+        if( player[target_player_id-1].health < 1 ){
+          printf("目標玩家已死亡 請重新選取\n");
+          sleep(1);
+          return 0;
+        }
+        player[target_player_id].jail = target_card_id;
+        player[current_player_id_turn-1].hand[target_card_id] = 0;
+        player[current_player_id_turn-1].card_amount --;
+        printf("\n成功使用\n");
+        sleep(3);
+        break;
+      }
+    }
+    return 1;
+  }
+	return 0;
 }
 
 int Dynamite(int current_player_id_turn, int target_card_id){
-
-return 0;
+  int target_player_id;
+  while(1){
+    printf("此卡片的能力為 %s 是否要使用( y | n ) : ",card[target_card_id].description);
+    clear_stdin();
+    char ans[20];
+    fgets(ans,20,stdin);
+    clean_fgets_buffer(ans);
+    if (ans[0] == 'n'){
+      return 0;
+    }
+    else if(ans[0] == 'y'){
+      if(player[current_player_id_turn-1].dynamite != -1){
+        while(1){
+          printf("目前已經裝備一張同類型裝備卡%3d. %s ",player[current_player_id_turn-1].dynamite, card[player[current_player_id_turn-1].dynamite].name);
+          printf("是否要棄掉此卡並裝備%3d. %s( y | n ): ",target_card_id, card[target_card_id].name) ;
+          clear_stdin();
+          fgets(ans,20,stdin);
+          clean_fgets_buffer(ans);
+          if (ans[0] == 'n'){
+            return 0;
+          }
+          else if(ans[0] == 'y'){
+            drop_card(current_player_id_turn, player[current_player_id_turn-1].dynamite);
+            break;
+          }
+        }
+      }
+      player[current_player_id_turn-1].dynamite = target_card_id;
+      player[current_player_id_turn-1].hand[target_card_id] = 0;
+      player[current_player_id_turn-1].card_amount --;
+      printf("\n成功使用\n");
+      sleep(3);
+      break;
+    }
+    return 1;
+  }
+	return 0;
 }
 
 int Weapon(int current_player_id_turn, int target_card_id){
@@ -2551,6 +2459,7 @@ int Weapon(int current_player_id_turn, int target_card_id){
           }
           else if(ans[0] == 'y'){
             drop_card(current_player_id_turn, player[current_player_id_turn-1].weapon);
+            break;
           }
         }
       }
