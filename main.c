@@ -26,6 +26,8 @@ void clear_stdin();
 void clean_fgets_buffer(char temp[]);
 int get_winner(struct Player player[4]);
 int ai_attack_target(int invalid[4], int ai_id); //ai_id & retrun value: 1-4
+int weapon_range(int weapon_id);
+int ai_use_card(int current_player_id_turn, int check_bang);
 void Black_Jack(int current_player_id_turn);
 void Pedro_Ramirez(int current_player_id_turn);
 void Kit_Carlson(int current_player_id_turn);
@@ -501,11 +503,18 @@ int main(void){
         sleep(1);
       }
 
-      printf("請選擇要出的卡片號碼 (0~79) [-1為結束出牌階段] : ");
+     printf("請選擇要出的卡片號碼 (0~79) [-1為結束出牌階段] : ");
+      int target_card_id = -1;
       char ans_num[20];
-      fgets(ans_num,20,stdin);
-      clean_fgets_buffer(ans_num);
-      int target_card_id = atoi(ans_num);
+      if ( player[current_player_id_turn-1].AI ){
+        target_card_id = ai_use_card(current_player_id_turn, check_bang);
+        printf("%d\n", target_card_id);
+      }
+      else{
+        fgets(ans_num,20,stdin);
+        clean_fgets_buffer(ans_num);
+        target_card_id = atoi(ans_num);
+      }
       if( target_card_id == 0 && (ans_num[0] != '0') ){
         printf("%s不是合法的輸入\n",ans_num);
         sleep(1);
@@ -2900,4 +2909,180 @@ int Weapon(int current_player_id_turn, int target_card_id){
     return 1;
   }
   return 0;
+}
+
+int weapon_range(int weapon_id){
+  if ( weapon_id >= 74 && weapon_id <= 76 ){
+    return 2;
+  }
+  if ( weapon_id >= 77 && weapon_id <= 79 ){
+    return weapon_id - 74;
+  }
+  return 0;
+}
+
+int ai_use_card(int current_player_id_turn, int check_bang){ 
+  //紀錄警長ID 存活數
+  int sheriff = 0; //1-4
+  int alive = 0;
+  for ( int i=0; i<4; i++ ){
+    if ( player[i].position == 1 ){
+      sheriff = i+1;
+    }
+    if ( player[i].health > 0 ){
+      alive ++;
+    }
+  }
+  //血量上限
+  int health_limit = career[player[current_player_id_turn-1].career].health;
+  if (player[current_player_id_turn-1].position == 1){
+    health_limit ++;
+  }
+  //bang數量
+  int bang_count = 0;
+  for ( int i=0; i<=24; i++ ){
+    if ( player[current_player_id_turn-1].hand[i] ){
+      bang_count ++;
+    }
+  }
+  //missed數量
+  int missed_count = 0;
+  for ( int i=25; i<=36; i++ ){
+    if ( player[current_player_id_turn-1].hand[i] ){
+      missed_count ++;
+    }
+  }
+
+  //回血(啤酒)
+  if ( player[current_player_id_turn-1].health < health_limit ){
+    for ( int i=53; i<=58; i++ ){
+      if ( player[current_player_id_turn-1].hand[i] ){
+        return i;
+      }
+    }
+  }
+  //回血(全員), 對他人有利, 快死才用
+  if ( player[current_player_id_turn-1].hand[59] ){
+    if ( player[current_player_id_turn-1].health <= 1 ){
+      return 59;
+    }
+  }
+  //警長 降低他人攻擊力: 印地安
+  if ( player[current_player_id_turn-1].position == 1 ){
+    if ( player[current_player_id_turn-1].hand[38] ){
+      return 38;
+    }
+    if ( player[current_player_id_turn-1].hand[39] ){
+      return 39;
+    }
+  }
+  //警長 降低他人攻擊力: 監獄
+  /*
+  if ( player[current_player_id_turn-1].position == 1 ){
+    for ( int i=68; i<=70; i++ ){
+      if ( player[current_player_id_turn-1].hand[i] ){
+        return i;
+      }
+    }
+  }
+  */
+  //啤酒桶
+  if ( player[current_player_id_turn-1].hand[63] && player[current_player_id_turn-1].weapon != 64){ 
+    return 63;
+  }
+  if ( player[current_player_id_turn-1].hand[64] && player[current_player_id_turn-1].weapon != 63){ 
+    return 64;
+  }
+  //武器升級: 連發
+  if ( player[current_player_id_turn-1].hand[72] && player[current_player_id_turn-1].weapon != 73){ 
+    return 72;
+  }
+  if ( player[current_player_id_turn-1].hand[73] && player[current_player_id_turn-1].weapon != 72){ 
+    return 73;
+  }
+  //武器升級: 提升射程74-49
+  int current_range = weapon_range( player[current_player_id_turn-1].weapon );
+  for ( int i=79; i>=74; i-- ){
+    if ( player[current_player_id_turn-1].hand[i] ){
+      if ( weapon_range(i) > current_range ){
+        return i;
+      }
+    }
+  }
+  //裝備升級: 瞄準鏡
+  if ( player[current_player_id_turn-1].hand[65] ){
+    return 65;
+  }
+  //裝備升級: 馬匹: 與警長距離為2的歹徒選67 其餘66
+  if ( player[current_player_id_turn-1].position == 3 && abs( current_player_id_turn - sheriff ) >= 2 ){
+    if ( player[current_player_id_turn-1].hand[67] ){
+      return 67;
+    }
+    if ( player[current_player_id_turn-1].hand[66] ){
+      return 66;
+    }
+  }
+  else{
+    if ( player[current_player_id_turn-1].hand[66] ){
+      return 66;
+    }
+    if ( player[current_player_id_turn-1].hand[67] ){
+      return 67;
+    }
+  }
+  //增加手牌 
+  if ( ( health_limit - player[current_player_id_turn-1].card_amount ) >= 3 && player[current_player_id_turn-1].hand[50] ){
+    return 50;
+  }
+  if ( ( health_limit - player[current_player_id_turn-1].card_amount ) >= 2 ){
+    if ( player[current_player_id_turn-1].hand[48] ){
+      return 48;
+    }
+    if ( player[current_player_id_turn-1].hand[49] ){
+      return 49;
+    }
+  }
+  //增加手牌(雜貨店): 對他人有利, 快沒牌才用
+  if ( player[current_player_id_turn-1].card_amount <= 2){
+    if ( player[current_player_id_turn-1].hand[51] ){
+      return 48;
+    }
+    if ( player[current_player_id_turn-1].hand[52] ){
+      return 52;
+    }
+  }
+  //確保狀態後 以下是攻擊型
+  //警長攻擊時 優先用加特林
+  if ( player[current_player_id_turn-1].position == 1 && player[current_player_id_turn-1].hand[37] ){
+    return 37;
+  }
+  //bang: calamity janet沒missed時會保留1張bang
+  if ( !( player[current_player_id_turn-1].career == 2 && missed_count == 0 && bang_count <= 1 ) && check_bang != -2 ){
+    for ( int i=0; i<=24; i++ ){
+      if ( player[current_player_id_turn-1].hand[i] ){
+        return i;
+      }
+    }
+  }
+  //決鬥: 手上bang >= 2
+  if ( bang_count >= 2 ){
+    for ( int i=60; i<=62; i++ ){
+      if ( player[current_player_id_turn-1].hand[i] ){
+        return i;
+      }
+    }
+  }
+  //指定放棄 驚慌 > cat
+  for ( int i=40; i<=47; i++ ){
+    if ( player[current_player_id_turn-1].hand[i] ){
+      return i;
+    }
+  }
+  //炸彈
+  /*
+  if ( alive >= 3 && player[current_player_id_turn-1].hand[71] ){
+    return 71;
+  }
+  */
+  return -1;
 }
